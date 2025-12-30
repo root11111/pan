@@ -43,8 +43,10 @@
       <div class="company-intro-bg"></div>
       <div class="container">
         <div class="intro-wrapper">
-          <h2 class="section-title slide-in-top">{{ currentLang === 'en' ? 'Company Profile' : '公司简介' }}</h2>
-          <p class="section-subtitle slide-in-top">{{ currentLang === 'en' ? '公司简介' : 'Company Profile' }}</p>
+          <h2 class="section-title slide-in-top">
+            <span>公司简介</span>
+            <span class="company-profile-inline">Company Profile</span>
+          </h2>
           <div class="intro-content slide-in-bottom" v-if="companyInfo">
             <p class="intro-text">
               {{ currentLang === 'en' ? companyInfo.descriptionEn : companyInfo.descriptionCn }}
@@ -641,12 +643,24 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80');
+  opacity: 0.5;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.company-intro-bg::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100vh;
+  height: 100vw;
+  background-image: url('/company-intro-bg.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.3;
-  z-index: 0;
+  transform: translate(-50%, -50%) rotate(270deg);
+  transform-origin: center center;
 }
 
 .company-intro-bg::after {
@@ -664,18 +678,65 @@ export default {
   z-index: 1;
 }
 
+.company-intro .section-title {
+  color: #000;
+  font-weight: 800;
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.9), 0 0 10px rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 15px 30px;
+  border-radius: 15px;
+  display: inline-block;
+  margin: 0 auto 20px;
+  display: inline-flex;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.company-profile-inline {
+  font-size: 18px;
+  font-weight: 700;
+  color: #000;
+  opacity: 0.9;
+}
+
 /* 公司简介动画由 scrollAnimation.js 处理 */
 
 .intro-content {
   text-align: center;
   max-width: 900px;
-  margin: 0 auto;
+  margin: 0 auto 0 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 40px;
+  padding-right: 100px;
+  border-radius: 20px 0 0 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-right: none;
+  position: relative;
+}
+
+.intro-content::after {
+  content: '';
+  position: absolute;
+  right: -100vw;
+  top: 0;
+  bottom: 0;
+  width: 100vw;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: -1;
+  border-radius: 0;
 }
 
 .intro-text {
   font-size: 16px;
   line-height: 1.8;
-  color: #666;
+  color: #333;
   margin-bottom: 30px;
   text-align: left;
   display: -webkit-box;
@@ -683,6 +744,8 @@ export default {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .advantage-intro {
