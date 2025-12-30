@@ -15,6 +15,7 @@ public class CertificationCategory {
     private Long id;
     private String nameCn; // 中文名称
     private String nameEn; // 英文名称
+    private String icon;   // 分类图标路径
     private Long parentId; // 父分类ID，0表示顶级分类
     private Integer sortOrder; // 排序
     private LocalDateTime createTime;

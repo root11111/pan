@@ -2,6 +2,11 @@
   <div class="contact">
     <Header />
     
+    <!-- 右侧固定图片 -->
+    <div class="contact-right-image">
+      <img :src="contactRightImage" alt="Contact Right Image" />
+    </div>
+    
     <div class="page-banner slide-in-top">
       <div class="banner-content">
         <h1 class="fade-in-immediate">联系我们</h1>
@@ -12,7 +17,7 @@
     <div class="container" style="padding: 0px 20px 60px 20px;">
       <el-row :gutter="40">
         <el-col :xs="24" :md="12">
-          <el-card class="slide-in-left">
+          <el-card class="slide-in-left contact-card">
             <h2 style="margin-bottom: 30px;">{{ t('contactInfo') }}</h2>
             <div class="contact-info" v-if="companyInfo">
               <div class="contact-item">
@@ -37,7 +42,14 @@
                 </div>
               </div>
               <div class="contact-item">
-                <el-icon><Message /></el-icon>
+                <div class="qq-icon">
+                  <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+                    <path d="M512 64C264.6 64 64 264.6 64 512c0 186.2 104.8 347.7 258.1 428.1l-72.3-203.7c-8.9-25.1-13.4-51.4-13.4-78.3 0-141.4 114.6-256 256-256s256 114.6 256 256c0 26.9-4.5 53.2-13.4 78.3L701.9 940.1C855.2 859.7 960 698.2 960 512 960 264.6 759.4 64 512 64z" fill="#12B7F5"/>
+                    <circle cx="384" cy="448" r="48" fill="#FFFFFF"/>
+                    <circle cx="640" cy="448" r="48" fill="#FFFFFF"/>
+                    <path d="M512 640c-70.7 0-128 57.3-128 128 0 35.3 14.3 67.3 37.5 90.5 23.2 23.2 55.2 37.5 90.5 37.5s67.3-14.3 90.5-37.5c23.2-23.2 37.5-55.2 37.5-90.5 0-70.7-57.3-128-128-128z" fill="#FFFFFF"/>
+                  </svg>
+                </div>
                 <div>
                   <h3>QQ</h3>
                   <p>{{ companyInfo.qq }}</p>
@@ -61,7 +73,7 @@
           </el-card>
         </el-col>
         <el-col :xs="24" :md="12">
-          <el-card class="slide-in-right">
+          <el-card class="slide-in-right contact-card">
             <h2 style="margin-bottom: 30px;">{{ t('onlineMessage') }}</h2>
             <el-form :model="form" :rules="rules" ref="formRef" label-width="80px">
               <el-form-item :label="t('name')" prop="name">
@@ -128,6 +140,7 @@ export default {
     const formRef = ref(null)
     const submitting = ref(false)
     const companyInfo = ref(null)
+    const contactRightImage = ref('/api/uploads/icon/1767080827115-ckt-抠图.png')
     const form = reactive({
       name: '',
       phone: '',
@@ -219,6 +232,7 @@ export default {
       rules,
       submitting,
       companyInfo,
+      contactRightImage,
       submitForm,
       t
     }
@@ -229,6 +243,74 @@ export default {
 <style scoped>
 .contact {
   min-height: 100vh;
+  position: relative;
+}
+
+.contact-right-image {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 998;
+  width: auto;
+  height: auto;
+  pointer-events: none;
+}
+
+.contact-right-image img {
+  max-width: 200px;
+  max-height: 400px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.contact-card {
+  background: rgba(60, 60, 60, 0.85) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  color: #fff !important;
+}
+
+.contact-card h2 {
+  color: #fff !important;
+}
+
+.contact-card .contact-item h3 {
+  color: #fff !important;
+}
+
+.contact-card .contact-item p {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.contact-card .contact-item .el-icon {
+  color: #409eff !important;
+}
+
+.contact-card :deep(.el-form-item__label) {
+  color: #fff !important;
+}
+
+.contact-card :deep(.el-input__inner),
+.contact-card :deep(.el-textarea__inner) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: #fff !important;
+}
+
+.contact-card :deep(.el-input__inner::placeholder),
+.contact-card :deep(.el-textarea__inner::placeholder) {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.contact-card :deep(.el-card__body) {
+  padding: 28px 26px;
 }
 
 .page-banner {
@@ -291,6 +373,21 @@ export default {
   margin-top: 5px;
 }
 
+.contact-item .qq-icon {
+  width: 24px;
+  height: 24px;
+  margin-top: 5px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contact-item .qq-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
 .contact-item h3 {
   font-size: 18px;
   margin-bottom: 8px;
@@ -304,6 +401,19 @@ export default {
 
 /* 移动端适配 */
 @media (max-width: 768px) {
+  .contact-right-image {
+    display: none;
+  }
+
+  .contact-card {
+    border-radius: 18px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+  }
+
+  .contact-card :deep(.el-card__body) {
+    padding: 22px 18px;
+  }
+
   .page-banner {
     padding: 50px 15px;
   }

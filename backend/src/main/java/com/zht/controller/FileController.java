@@ -68,5 +68,37 @@ public class FileController {
         
         return Result.success(urls);
     }
+    
+    /**
+     * 获取图标列表
+     */
+    @GetMapping("/icons")
+    public Result<List<String>> getIcons() {
+        List<String> iconUrls = new ArrayList<>();
+        File iconDir = new File(UPLOAD_DIR + "icon/");
+        
+        if (iconDir.exists() && iconDir.isDirectory()) {
+            File[] files = iconDir.listFiles((dir, name) -> {
+                String lowerName = name.toLowerCase();
+                return lowerName.endsWith(".png") || 
+                       lowerName.endsWith(".jpg") || 
+                       lowerName.endsWith(".jpeg") || 
+                       lowerName.endsWith(".gif") || 
+                       lowerName.endsWith(".svg") || 
+                       lowerName.endsWith(".webp");
+            });
+            
+            if (files != null) {
+                for (File file : files) {
+                    // 排除特定图片，这个图片会显示在Header中
+                    if (!file.getName().equals("v2-374cca7798b851b355142ce05a7fd301_1440w.png")) {
+                        iconUrls.add("/api/uploads/icon/" + file.getName());
+                    }
+                }
+            }
+        }
+        
+        return Result.success(iconUrls);
+    }
 }
 

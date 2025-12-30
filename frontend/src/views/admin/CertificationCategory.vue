@@ -71,6 +71,31 @@
         <el-form-item label="排序">
           <el-input-number v-model="form.sortOrder" :min="0" />
         </el-form-item>
+        <el-form-item label="分类图标">
+          <el-upload
+            :action="uploadUrl"
+            :headers="uploadHeaders"
+            :show-file-list="false"
+            :on-success="handleIconUploadSuccess"
+            drag
+            accept="image/*"
+          >
+            <div v-if="!form.icon" class="el-upload__text">
+              将图标拖到此处，或<em>点击上传</em>
+            </div>
+            <div v-if="form.icon">
+              <img :src="getImageUrl(form.icon)" style="max-width: 120px; max-height: 80px; border-radius: 4px;" />
+              <div style="margin-top: 8px;">
+                <el-button size="small" type="danger" @click.stop="form.icon = ''">删除图标</el-button>
+              </div>
+            </div>
+            <template #tip>
+              <div class="el-upload__tip" v-if="!form.icon">
+                只能上传图片文件，用于前台“全球认证”模块显示
+              </div>
+            </template>
+          </el-upload>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -84,6 +109,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from 'axios'
+import { getImageUrl } from '../../utils/image'
 
 export default {
   name: 'AdminCertificationCategory',
@@ -100,8 +126,14 @@ export default {
       nameCn: '',
       nameEn: '',
       parentId: 0,
-      sortOrder: 0
+      sortOrder: 0,
+      icon: '' // 分类图标
     })
+
+    const uploadUrl = '/api/file/upload'
+    const uploadHeaders = {
+      Authorization: `Bearer ${localStorage.getItem('admin_token')}`
+    }
 
     const api = axios.create({
       baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082/api',
@@ -172,7 +204,8 @@ export default {
         nameCn: '',
         nameEn: '',
         parentId: 0,
-        sortOrder: 0
+        sortOrder: 0,
+        icon: ''
       })
       dialogVisible.value = true
     }
@@ -184,7 +217,8 @@ export default {
         nameCn: '',
         nameEn: '',
         parentId: parent.id,
-        sortOrder: 0
+        sortOrder: 0,
+        icon: ''
       })
       dialogVisible.value = true
     }
@@ -196,6 +230,15 @@ export default {
         form.parentId = 0
       }
       dialogVisible.value = true
+    }
+
+    const handleIconUploadSuccess = (response) => {
+      if (response.code === 200) {
+        form.icon = response.data
+        ElMessage.success('图标上传成功')
+      } else {
+        ElMessage.error(response.message || '图标上传失败')
+      }
     }
 
     const handleSave = async () => {
@@ -292,7 +335,7 @@ export default {
       })
     }
 
-    return {
+      return {
       tableData,
       treeData,
       topCategories,
@@ -301,6 +344,8 @@ export default {
       selectedIds,
       treeRef,
       form,
+      uploadUrl,
+      uploadHeaders,
       handleAdd,
       handleAddChild,
       handleEdit,
@@ -308,7 +353,9 @@ export default {
       handleDelete,
       handleTreeCheck,
       handleBatchDelete,
-      loadData
+      handleIconUploadSuccess,
+      loadData,
+      getImageUrl
     }
   }
 }

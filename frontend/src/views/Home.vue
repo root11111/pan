@@ -38,6 +38,31 @@
       </div>
     </section>
 
+    <!-- 图标展示 -->
+    <section class="section icon-showcase" v-if="filteredIcons.length > 0">
+      <div class="container">
+        <div class="icon-scroll-wrapper">
+          <div class="icon-row">
+            <div
+              class="icon-item"
+              v-for="(icon, index) in filteredIcons"
+              :key="`icon-1-${index}`"
+            >
+              <img :src="icon" :alt="`Icon ${index + 1}`" @error="handleIconError" />
+            </div>
+            <!-- 复制一遍图标实现无缝循环 -->
+            <div
+              class="icon-item"
+              v-for="(icon, index) in filteredIcons"
+              :key="`icon-2-${index}`"
+            >
+              <img :src="icon" :alt="`Icon ${index + 1}`" @error="handleIconError" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- 公司简介 -->
     <section class="section company-intro slide-in-right">
       <div class="company-intro-bg"></div>
@@ -53,6 +78,105 @@
             </p>
             <el-button type="primary" class="hover-lift" @click="$router.push('/about')">{{ t('viewDetails') }}</el-button>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 全球认证 -->
+    <section class="section certification-section">
+      <div class="container">
+        <h2 class="section-title slide-in-top">{{ currentLang === 'en' ? 'Global Certification' : '全球认证' }}</h2>
+        <p class="section-subtitle slide-in-top">{{ currentLang === 'en' ? '全球认证' : 'Global Certification' }}</p>
+        <el-row :gutter="30" class="certification-list">
+          <el-col :xs="12" :sm="8" :md="6" :lg="4" v-for="item in certifications" :key="item.id">
+            <el-card class="certification-card scale-in hover-lift" shadow="hover">
+              <div class="certification-icon">
+                <img :src="item.icon" :alt="item.name" @error="handleImageError" @load="handleImageLoad($event, item)" />
+                <div class="icon-placeholder">
+                  <span class="icon-text">{{ item.name.charAt(0) }}</span>
+                </div>
+              </div>
+              <h3>{{ item.name }}</h3>
+            </el-card>
+          </el-col>
+        </el-row>
+      </div>
+    </section>
+
+    <!-- 检测项目 -->
+    <section class="section testing-section">
+      <div class="container">
+        <h2 class="section-title slide-in-top">
+          {{ currentLang === 'en' ? 'Testing Projects' : '检测项目' }}
+        </h2>
+        <p class="section-subtitle slide-in-top">
+          {{ currentLang === 'en' ? 'SURVEILLANCE PROJECT' : 'SURVEILLANCE PROJECT' }}
+        </p>
+
+        <!-- 参考 CTL 检测项目图标结构：https://www.ctl-lab.com/index.html -->
+        <div class="ipro-list">
+          <ul>
+            <li>
+              <a href="javascript:void(0);">
+                <i class="icon-pro icon-ylqx"></i>
+                <span>{{ currentLang === 'en' ? 'Medical Devices' : '医疗器械' }}</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0);">
+                <i class="icon-pro icon-dj"></i>
+                <span>{{ currentLang === 'en' ? 'Lighting' : '灯具' }}</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0);">
+                <i class="icon-pro icon-jydq"></i>
+                <span>{{ currentLang === 'en' ? 'Household Appliances' : '家用电器' }}</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0);">
+                <i class="icon-pro icon-stcp"></i>
+                <span>{{ currentLang === 'en' ? 'AV Products' : '视听产品' }}</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0);">
+                <i class="icon-pro icon-wxtx"></i>
+                <span>{{ currentLang === 'en' ? 'Wireless Communication' : '无线通讯' }}</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0);">
+                <i class="icon-pro icon-jgcp"></i>
+                <span>{{ currentLang === 'en' ? 'Laser Products' : '激光产品' }}</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0);">
+                <i class="icon-pro icon-jxsb"></i>
+                <span>{{ currentLang === 'en' ? 'Machinery' : '机械设备' }}</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0);">
+                <i class="icon-pro icon-wj"></i>
+                <span>{{ currentLang === 'en' ? 'Toys' : '玩具' }}</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0);">
+                <i class="icon-pro icon-gysb"></i>
+                <span>{{ currentLang === 'en' ? 'Industrial Equipment' : '工业设备' }}</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0);">
+                <i class="icon-pro icon-qt"></i>
+                <span>{{ currentLang === 'en' ? 'Others' : '其他' }}</span>
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
     </section>
@@ -211,7 +335,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { ArrowLeft, ArrowRight, View } from '@element-plus/icons-vue'
 import Header from '../components/Header.vue'
 import Footer from '../components/Footer.vue'
@@ -220,7 +344,8 @@ import { getAdvantages } from '../api/advantage'
 import { getLaboratories } from '../api/laboratory'
 import { getHonors } from '../api/honor'
 import { getLatestNews } from '../api/news'
-import { getHomeConfigMap, getBannerValues } from '../api/homeConfig'
+import { getHomeConfigMap, getBannerValues, getIcons } from '../api/homeConfig'
+import { getTopCertificationCategories } from '../api/certification'
 import { getImageUrl, processImageUrls } from '../utils/image'
 import { initAllScrollAnimations } from '../utils/scrollAnimation'
 import { useI18n } from '../utils/i18n'
@@ -245,17 +370,91 @@ export default {
     const homeConfig = ref({})
     const bannerValues = ref([])
     const isPaused = ref(false)
+    const icons = ref([])
+    
+    // 过滤掉特定图片的图标列表
+    const filteredIcons = computed(() => {
+      return icons.value.filter(icon => {
+        if (!icon || typeof icon !== 'string') return false
+        // 排除不需要在首页图标行展示的图片
+        if (icon.includes('v2-374cca7798b851b355142ce05a7fd301_1440w.png')) return false
+        if (icon.includes('1767079908439-ckt-抠图.png')) return false
+        if (icon.includes('1767080827115-ckt-抠图.png')) return false
+        return true
+      })
+    })
+    
+    // 全球认证分类数据（只显示分类主类）
+    const certifications = ref([])
+    
+    // 格式化认证分类数据（用于“全球认证”模块）
+    const formatCertifications = (data) => {
+      if (!data || !Array.isArray(data)) return []
+      return data
+        .map(item => ({
+          id: item.id,
+          name: currentLang.value === 'en'
+            ? (item.nameEn || item.nameCn || '')
+            : (item.nameCn || item.nameEn || ''),
+          icon: item.icon ? getImageUrl(item.icon) : '',
+          iconLoaded: false,
+          originalData: item
+        }))
+        .filter(item => item.name) // 过滤掉没有名称的项
+        .sort((a, b) => (a.originalData.sortOrder || 0) - (b.originalData.sortOrder || 0))
+    }
+    
+    // 检测项目数据
+    const testingProjects = ref([
+      { id: 1, name: currentLang.value === 'en' ? 'Medical Device' : '医疗器械', icon: '/testing/medical.png', iconLoaded: false },
+      { id: 2, name: currentLang.value === 'en' ? 'Lighting' : '灯具', icon: '/testing/lighting.png', iconLoaded: false },
+      { id: 3, name: currentLang.value === 'en' ? 'Home Appliance' : '家用电器', icon: '/testing/appliance.png', iconLoaded: false },
+      { id: 4, name: currentLang.value === 'en' ? 'Audio & Video' : '视听产品', icon: '/testing/audio.png', iconLoaded: false },
+      { id: 5, name: currentLang.value === 'en' ? 'Wireless Communication' : '无线通讯', icon: '/testing/wireless.png', iconLoaded: false },
+      { id: 6, name: currentLang.value === 'en' ? 'Laser Product' : '激光产品', icon: '/testing/laser.png', iconLoaded: false },
+      { id: 7, name: currentLang.value === 'en' ? 'Machinery' : '机械设备', icon: '/testing/machinery.png', iconLoaded: false },
+      { id: 8, name: currentLang.value === 'en' ? 'Toy' : '玩具', icon: '/testing/toy.png', iconLoaded: false },
+      { id: 9, name: currentLang.value === 'en' ? 'Industrial Equipment' : '工业设备', icon: '/testing/industrial.png', iconLoaded: false },
+      { id: 10, name: currentLang.value === 'en' ? 'Other' : '其他', icon: '/testing/other.png', iconLoaded: false }
+    ])
+    
+    // 监听语言变化，更新认证分类名称和检测项目名称
+    watch(currentLang, (newLang) => {
+      // 更新全球认证分类名称
+      certifications.value = certifications.value.map(item => ({
+        ...item,
+        name: newLang === 'en'
+          ? (item.originalData.nameEn || item.originalData.nameCn || '')
+          : (item.originalData.nameCn || item.originalData.nameEn || '')
+      }))
+      
+      // 更新检测项目名称（仍使用前端写死的配置）
+      testingProjects.value = [
+        { id: 1, name: newLang === 'en' ? 'Medical Device' : '医疗器械', icon: '/testing/medical.png', iconLoaded: false },
+        { id: 2, name: newLang === 'en' ? 'Lighting' : '灯具', icon: '/testing/lighting.png', iconLoaded: false },
+        { id: 3, name: newLang === 'en' ? 'Home Appliance' : '家用电器', icon: '/testing/appliance.png', iconLoaded: false },
+        { id: 4, name: newLang === 'en' ? 'Audio & Video' : '视听产品', icon: '/testing/audio.png', iconLoaded: false },
+        { id: 5, name: newLang === 'en' ? 'Wireless Communication' : '无线通讯', icon: '/testing/wireless.png', iconLoaded: false },
+        { id: 6, name: newLang === 'en' ? 'Laser Product' : '激光产品', icon: '/testing/laser.png', iconLoaded: false },
+        { id: 7, name: newLang === 'en' ? 'Machinery' : '机械设备', icon: '/testing/machinery.png', iconLoaded: false },
+        { id: 8, name: newLang === 'en' ? 'Toy' : '玩具', icon: '/testing/toy.png', iconLoaded: false },
+        { id: 9, name: newLang === 'en' ? 'Industrial Equipment' : '工业设备', icon: '/testing/industrial.png', iconLoaded: false },
+        { id: 10, name: newLang === 'en' ? 'Other' : '其他', icon: '/testing/other.png', iconLoaded: false }
+      ]
+    })
 
     onMounted(async () => {
       try {
-        const [companyRes, advantageRes, labRes, honorRes, newsRes, configRes, valuesRes] = await Promise.all([
+        const [companyRes, advantageRes, labRes, honorRes, newsRes, configRes, valuesRes, iconsRes, categoriesRes] = await Promise.all([
           getCompanyInfo(),
           getAdvantages(),
           getLaboratories(),
           getHonors(),
           getLatestNews(6),
           getHomeConfigMap('cn'),
-          getBannerValues()
+          getBannerValues(),
+          getIcons(),
+          getTopCertificationCategories()
         ])
 
         if (companyRes.code === 200) {
@@ -278,6 +477,14 @@ export default {
         }
         if (valuesRes.code === 200) {
           bannerValues.value = valuesRes.data || []
+        }
+        if (iconsRes.code === 200) {
+          icons.value = iconsRes.data || []
+        }
+        // 使用后台认证分类主类（顶级分类）作为“全球认证”模块数据
+        if (categoriesRes.code === 200) {
+          const categoryData = categoriesRes.data || []
+          certifications.value = formatCertifications(categoryData)
         }
 
         // 等待DOM完全渲染后初始化滚动动画
@@ -333,6 +540,32 @@ export default {
       return uniqueLines.join('\n')
     }
 
+    // 处理图片加载错误
+    const handleImageError = (event) => {
+      // 图片加载失败时，隐藏图片
+      event.target.style.display = 'none'
+      // 显示占位符
+      const placeholder = event.target.nextElementSibling
+      if (placeholder && placeholder.classList.contains('icon-placeholder')) {
+        placeholder.style.display = 'flex'
+      }
+    }
+    
+    // 处理图片加载成功
+    const handleImageLoad = (event, item) => {
+      // 图片加载成功时，隐藏占位符
+      const placeholder = event.target.nextElementSibling
+      if (placeholder && placeholder.classList.contains('icon-placeholder')) {
+        placeholder.style.display = 'none'
+      }
+    }
+    
+    // 处理图标加载错误
+    const handleIconError = (event) => {
+      // 图标加载失败时，隐藏图标
+      event.target.style.display = 'none'
+    }
+
     return {
       companyInfo,
       advantages,
@@ -341,11 +574,17 @@ export default {
       latestNews,
       homeConfig,
       bannerValues,
+      certifications,
+      testingProjects,
       formatDate,
       formatDescription,
       t,
       currentLang,
       getImageUrl,
+      handleImageError,
+      handleImageLoad,
+      handleIconError,
+      filteredIcons,
       newsScrollRef,
       pauseAutoScroll,
       resumeAutoScroll
@@ -631,6 +870,102 @@ export default {
   }
 }
 
+.icon-showcase {
+  background: #fff;
+  padding: 40px 0;
+  overflow: hidden;
+}
+
+.icon-scroll-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.icon-row {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding: 20px 0;
+  white-space: nowrap;
+  width: fit-content;
+  animation: scrollIcons 30s linear infinite;
+}
+
+.icon-item {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.3s ease;
+  animation: floatIcon 3s ease-in-out infinite;
+}
+
+.icon-item:nth-child(odd) {
+  animation-delay: 0s;
+}
+
+.icon-item:nth-child(even) {
+  animation-delay: 1.5s;
+}
+
+.icon-item:hover {
+  transform: scale(1.15);
+  animation-play-state: paused;
+}
+
+.icon-item img {
+  max-width: 120px;
+  max-height: 80px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: grayscale(0%);
+  transition: all 0.3s ease;
+}
+
+.icon-item:hover img {
+  filter: grayscale(0%);
+  transform: scale(1.1);
+}
+
+@keyframes scrollIcons {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes floatIcon {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@media (max-width: 768px) {
+  .icon-scroll-wrapper {
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+  }
+
+  .icon-row {
+    gap: 25px;
+    animation-duration: 25s;
+  }
+  
+  .icon-item img {
+    max-width: 80px;
+    max-height: 60px;
+  }
+}
+
 .company-intro {
   position: relative;
   background: #f8f9fa;
@@ -904,6 +1239,242 @@ export default {
   .advantage-description {
     font-size: 13px;
   }
+
+  .certification-section,
+  .testing-section {
+    padding: 40px 0;
+  }
+
+  .certification-icon {
+    height: 60px;
+    margin-bottom: 15px;
+  }
+
+  .certification-icon img {
+    max-height: 60px;
+  }
+
+  .certification-card h3 {
+    font-size: 14px;
+  }
+
+  .ipro-list ul {
+    gap: 16px;
+  }
+
+  .ipro-list li {
+    flex: 0 0 calc(33.333% - 16px);
+    min-width: 100px;
+  }
+
+  .icon-pro {
+    width: 52px;
+    height: 52px;
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+
+  .ipro-list span {
+    font-size: 12px;
+  }
+}
+
+.certification-section,
+.testing-section {
+  padding: 80px 0;
+  background: #fff;
+}
+
+.certification-section {
+  background: #f8f9fa;
+}
+
+.certification-card {
+  text-align: center;
+  padding: 30px 20px;
+  height: 100%;
+  border-radius: 15px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+}
+
+.certification-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--gradient-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+
+.certification-card:hover::before {
+  transform: scaleX(1);
+}
+
+.certification-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+.certification-icon {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
+  position: relative;
+}
+
+.certification-icon img {
+  max-width: 100%;
+  max-height: 80px;
+  object-fit: contain;
+  transition: transform 0.4s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.icon-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 0;
+}
+
+.icon-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.certification-card:hover .certification-icon img {
+  transform: scale(1.1);
+}
+
+.certification-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.3px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* 检测项目图标列表，参考 CTL 首页样式：https://www.ctl-lab.com/index.html */
+.ipro-list {
+  margin-top: 40px;
+}
+
+.ipro-list ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.ipro-list li {
+  flex: 0 0 calc(20% - 24px);
+  min-width: 160px;
+  text-align: center;
+}
+
+.ipro-list a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.ipro-list a:hover {
+  color: #409eff;
+}
+
+.icon-pro {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  color: #fff;
+  font-size: 26px;
+  font-weight: 600;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ipro-list a:hover .icon-pro {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+}
+
+.ipro-list span {
+  font-size: 14px;
+}
+
+/* 不同检测项目的配色，可根据需要微调 */
+.icon-ylqx {
+  background: linear-gradient(135deg, #ff7e5f, #feb47b);
+}
+
+.icon-dj {
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+}
+
+.icon-jydq {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.icon-stcp {
+  background: linear-gradient(135deg, #f7971e, #ffd200);
+}
+
+.icon-wxtx {
+  background: linear-gradient(135deg, #36d1dc, #5b86e5);
+}
+
+.icon-jgcp {
+  background: linear-gradient(135deg, #ff512f, #dd2476);
+}
+
+.icon-jxsb {
+  background: linear-gradient(135deg, #1d976c, #93f9b9);
+}
+
+.icon-wj {
+  background: linear-gradient(135deg, #c471ed, #f64f59);
+}
+
+.icon-gysb {
+  background: linear-gradient(135deg, #0ba360, #3cba92);
+}
+
+.icon-qt {
+  background: linear-gradient(135deg, #3a1c71, #d76d77);
 }
 
 .laboratories {

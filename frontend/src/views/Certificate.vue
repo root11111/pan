@@ -15,7 +15,7 @@
         <div class="query-form">
           <div class="form-header">
             <div class="form-icon">
-              <el-icon :size="48"><DocumentSearch /></el-icon>
+              <img :src="certificateIcon" alt="Certificate Icon" class="form-icon-image" />
             </div>
             <h2>{{ t('certificate') }}</h2>
             <p class="form-subtitle">{{ t('pleaseEnterCertificateNoOrProductName') }}</p>
@@ -237,6 +237,7 @@ export default {
   },
   setup() {
     const { t, lang: currentLang } = useI18n()
+    const certificateIcon = ref('/api/uploads/icon/1767079908439-ckt-抠图.png')
     const queryForm = ref({
       certificateNo: '',
       productName: ''
@@ -301,6 +302,7 @@ export default {
     })
 
     return {
+      certificateIcon,
       queryForm,
       queryResult,
       loading,
@@ -395,6 +397,15 @@ export default {
   color: #fff;
   box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
   animation: pulse 2s ease-in-out infinite;
+  overflow: hidden;
+  position: relative;
+}
+
+.form-icon-image {
+  width: 95%;
+  height: 95%;
+  object-fit: contain;
+  border-radius: 50%;
 }
 
 .form-header h2 {
@@ -653,6 +664,48 @@ export default {
 
   .query-form {
     padding: 30px 20px;
+  }
+
+  /* 手机端：让输入框和按钮整体居中，标签稍微靠左 */
+  .query-form-content {
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
+  /* 整体居中对齐 */
+  .query-form-content :deep(.el-form-item) {
+    width: 100%;
+    display: block;
+    text-align: center;
+  }
+
+  .query-form-content :deep(.el-form-item__label) {
+    width: 100%;
+    display: block;
+    text-align: center;
+    padding: 0 0 6px 0;
+    line-height: 1.4;
+  }
+
+  .query-form-content :deep(.el-form-item__content) {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  .query-form-content :deep(.el-input) {
+    width: 100%;
+  }
+
+  .query-form-content :deep(.el-input__wrapper) {
+    width: 100%;
+  }
+
+  .query-button {
+    display: block;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+    text-align: center;
   }
 
   .result-header {

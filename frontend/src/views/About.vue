@@ -145,6 +145,12 @@ export default {
       }
     }
 
+    // 处理图片加载错误
+    const handleImageError = (event) => {
+      // 图片加载失败时，隐藏图片或显示占位符
+      event.target.style.display = 'none'
+    }
+
     return {
       companyInfo,
       advantages,

@@ -12,3 +12,7 @@ export const getBannerValues = () => {
   return api.get('/banner-value/list')
 }
 
+export const getIcons = () => {
+  return api.get('/file/icons')
+}
+

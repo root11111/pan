@@ -1,10 +1,10 @@
 <template>
-  <el-header class="header">
-    <div class="header-content">
-      <div class="logo" @click="goToHome">
-        <img v-if="companyInfo?.logo" :src="getImageUrl(companyInfo.logo, 'force')" alt="Logo" />
-        <span class="logo-text">{{ currentLang === 'en' ? (companyInfo?.nameEn || 'Lantai Testing') : (companyInfo?.nameCn || '蓝泰检测') }}</span>
-      </div>
+    <el-header class="header">
+      <div class="header-content">
+        <div class="logo" @click="goToHome">
+          <img v-if="companyInfo?.logo" :src="getImageUrl(companyInfo.logo, 'force')" alt="Logo" />
+          <span class="logo-text">{{ currentLang === 'en' ? (companyInfo?.nameEn || 'Lantai Testing') : (companyInfo?.nameCn || '蓝泰检测') }}</span>
+        </div>
       
       <!-- 桌面端菜单 -->
       <el-menu

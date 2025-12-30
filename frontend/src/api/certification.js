@@ -20,3 +20,8 @@ export const getAllCertificationCategories = () => {
   return api.get('/certification-category/list')
 }
 
+// 获取顶级认证分类（主类，用于首页“全球认证”模块）
+export const getTopCertificationCategories = () => {
+  return api.get('/certification-category/top')
+}
+
