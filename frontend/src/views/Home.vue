@@ -114,7 +114,7 @@
         </p>
 
         <!-- 参考 CTL 检测项目图标结构：https://www.ctl-lab.com/index.html -->
-        <div class="ipro-list">
+        <div class="ipro-list" ref="testingIconsRef">
           <ul>
             <li>
               <a href="javascript:void(0);">
@@ -214,8 +214,12 @@
     <!-- 实验室中心 -->
     <section class="section laboratories">
       <div class="container">
-        <h2 class="section-title slide-in-top">Laboratory Center</h2>
-        <p class="section-subtitle slide-in-top">{{ currentLang === 'en' ? '实验室中心' : 'Laboratory Center' }}</p>
+        <h2 class="section-title slide-in-top">
+          {{ currentLang === 'en' ? 'Laboratory Center' : '实验室中心' }}
+        </h2>
+        <p class="section-subtitle slide-in-top">
+          {{ currentLang === 'en' ? '实验室中心' : 'Laboratory Center' }}
+        </p>
         <el-row :gutter="30">
           <el-col 
             :xs="24" 
@@ -271,8 +275,12 @@
     <!-- 新闻资讯 -->
     <section class="section news-section">
       <div class="container">
-        <h2 class="section-title">News Center</h2>
-        <p class="section-subtitle">新闻资讯</p>
+        <h2 class="section-title">
+          {{ currentLang === 'en' ? '新闻资讯' : 'News Center' }}
+        </h2>
+        <p class="section-subtitle">
+          {{ currentLang === 'en' ? 'News Center' : '新闻资讯' }}
+        </p>
         <div 
           class="news-scroll-wrapper" 
           ref="newsScrollRef"
@@ -371,6 +379,8 @@ export default {
     const bannerValues = ref([])
     const isPaused = ref(false)
     const icons = ref([])
+    const testingIconsRef = ref(null)
+    let testingIconsObserver = null
     
     // 过滤掉特定图片的图标列表
     const filteredIcons = computed(() => {
@@ -493,13 +503,37 @@ export default {
           initAllScrollAnimations()
         }, 100)
 
+        // 初始化“检测项目”图标滚动进入视口时的弹出动画
+        if (typeof window !== 'undefined' && 'IntersectionObserver' in window && testingIconsRef.value) {
+          testingIconsObserver = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  // 进入视口时添加动画类，并且只执行一次
+                  entry.target.classList.add('ipro-animate-once')
+                  if (testingIconsObserver) {
+                    testingIconsObserver.unobserve(entry.target)
+                  }
+                }
+              })
+            },
+            {
+              threshold: 0.2
+            }
+          )
+          testingIconsObserver.observe(testingIconsRef.value)
+        }
+
       } catch (error) {
         console.error('加载数据失败:', error)
       }
     })
 
     onUnmounted(() => {
-      // 清理工作
+      if (testingIconsObserver) {
+        testingIconsObserver.disconnect()
+        testingIconsObserver = null
+      }
     })
 
     // 暂停自动滚动（鼠标悬停时）
@@ -587,7 +621,8 @@ export default {
       filteredIcons,
       newsScrollRef,
       pauseAutoScroll,
-      resumeAutoScroll
+      resumeAutoScroll,
+      testingIconsRef
     }
   }
 }
@@ -1412,6 +1447,32 @@ export default {
   color: #409eff;
 }
 
+/* 滑动到视口时整块图标区域弹出动画（只执行一次） */
+@keyframes iproBounceIn {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.9) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(360deg);
+  }
+}
+
+.ipro-animate-once {
+  animation: iproBounceIn 0.6s ease-out forwards;
+}
+
+/* 彩球发光效果 */
+@keyframes iconGlow {
+  0% {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
+  }
+  100% {
+    box-shadow: 0 0 24px rgba(255, 255, 255, 0.6);
+  }
+}
+
 .icon-pro {
   width: 64px;
   height: 64px;
@@ -1423,13 +1484,14 @@ export default {
   color: #fff;
   font-size: 26px;
   font-weight: 600;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: iconGlow 2.2s ease-in-out infinite alternate;
 }
 
 .ipro-list a:hover .icon-pro {
   transform: translateY(-4px);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 0 28px rgba(255, 255, 255, 0.8);
 }
 
 .ipro-list span {
