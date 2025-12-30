@@ -87,19 +87,54 @@
       <div class="container">
         <h2 class="section-title slide-in-top">{{ currentLang === 'en' ? 'Global Certification' : '全球认证' }}</h2>
         <p class="section-subtitle slide-in-top">{{ currentLang === 'en' ? '全球认证' : 'Global Certification' }}</p>
-        <el-row :gutter="30" class="certification-list">
-          <el-col :xs="12" :sm="8" :md="6" :lg="4" v-for="item in certifications" :key="item.id">
-            <el-card class="certification-card scale-in hover-lift" shadow="hover">
-              <div class="certification-icon">
-                <img :src="item.icon" :alt="item.name" @error="handleImageError" @load="handleImageLoad($event, item)" />
-                <div class="icon-placeholder">
-                  <span class="icon-text">{{ item.name.charAt(0) }}</span>
+        <div class="cert-scroll-wrapper" v-if="certifications && certifications.length">
+          <div class="cert-row">
+            <!-- 第一组分类 -->
+            <div
+              class="cert-item"
+              v-for="item in certifications"
+              :key="`cert-1-${item.id}`"
+            >
+              <el-card class="certification-card hover-lift" shadow="hover">
+                <div class="certification-icon">
+                  <img
+                    v-if="item.icon"
+                    :src="item.icon"
+                    :alt="item.name"
+                    @error="handleImageError"
+                    @load="handleImageLoad($event, item)"
+                  />
+                  <div class="icon-placeholder">
+                    <span class="icon-text">{{ item.name.charAt(0) }}</span>
+                  </div>
                 </div>
-              </div>
-              <h3>{{ item.name }}</h3>
-            </el-card>
-          </el-col>
-        </el-row>
+                <h3>{{ item.name }}</h3>
+              </el-card>
+            </div>
+            <!-- 复制一组实现左右循环滚动 -->
+            <div
+              class="cert-item"
+              v-for="item in certifications"
+              :key="`cert-2-${item.id}`"
+            >
+              <el-card class="certification-card hover-lift" shadow="hover">
+                <div class="certification-icon">
+                  <img
+                    v-if="item.icon"
+                    :src="item.icon"
+                    :alt="item.name"
+                    @error="handleImageError"
+                    @load="handleImageLoad($event, item)"
+                  />
+                  <div class="icon-placeholder">
+                    <span class="icon-text">{{ item.name.charAt(0) }}</span>
+                  </div>
+                </div>
+                <h3>{{ item.name }}</h3>
+              </el-card>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -113,70 +148,122 @@
           {{ currentLang === 'en' ? 'SURVEILLANCE PROJECT' : 'SURVEILLANCE PROJECT' }}
         </p>
 
-        <!-- 参考 CTL 检测项目图标结构：https://www.ctl-lab.com/index.html -->
-        <div class="ipro-list" ref="testingIconsRef">
-          <ul>
+        <div class="testing-glass">
+          <!-- 参考 CTL 检测项目图标结构：https://www.ctl-lab.com/index.html -->
+          <div class="ipro-list" ref="testingIconsRef">
+            <ul>
             <li>
               <a href="javascript:void(0);">
-                <i class="icon-pro icon-ylqx"></i>
+                <div class="icon-pro">
+                  <img
+                    :src="getImageUrl('tubiao/医疗器械.png')"
+                    alt="医疗器械"
+                  />
+                </div>
                 <span>{{ currentLang === 'en' ? 'Medical Devices' : '医疗器械' }}</span>
               </a>
             </li>
             <li>
               <a href="javascript:void(0);">
-                <i class="icon-pro icon-dj"></i>
+                <div class="icon-pro">
+                  <img
+                    :src="getImageUrl('tubiao/灯具.png')"
+                    alt="灯具"
+                  />
+                </div>
                 <span>{{ currentLang === 'en' ? 'Lighting' : '灯具' }}</span>
               </a>
             </li>
             <li>
               <a href="javascript:void(0);">
-                <i class="icon-pro icon-jydq"></i>
+                <div class="icon-pro">
+                  <img
+                    :src="getImageUrl('tubiao/家用电器.png')"
+                    alt="家用电器"
+                  />
+                </div>
                 <span>{{ currentLang === 'en' ? 'Household Appliances' : '家用电器' }}</span>
               </a>
             </li>
             <li>
               <a href="javascript:void(0);">
-                <i class="icon-pro icon-stcp"></i>
+                <div class="icon-pro">
+                  <img
+                    :src="getImageUrl('tubiao/视听产品.png')"
+                    alt="视听产品"
+                  />
+                </div>
                 <span>{{ currentLang === 'en' ? 'AV Products' : '视听产品' }}</span>
               </a>
             </li>
             <li>
               <a href="javascript:void(0);">
-                <i class="icon-pro icon-wxtx"></i>
+                <div class="icon-pro">
+                  <img
+                    :src="getImageUrl('tubiao/无线通讯.png')"
+                    alt="无线通讯"
+                  />
+                </div>
                 <span>{{ currentLang === 'en' ? 'Wireless Communication' : '无线通讯' }}</span>
               </a>
             </li>
             <li>
               <a href="javascript:void(0);">
-                <i class="icon-pro icon-jgcp"></i>
+                <div class="icon-pro">
+                  <img
+                    :src="getImageUrl('tubiao/激光产品.png')"
+                    alt="激光产品"
+                  />
+                </div>
                 <span>{{ currentLang === 'en' ? 'Laser Products' : '激光产品' }}</span>
               </a>
             </li>
             <li>
               <a href="javascript:void(0);">
-                <i class="icon-pro icon-jxsb"></i>
+                <div class="icon-pro">
+                  <img
+                    :src="getImageUrl('tubiao/机械设备.png')"
+                    alt="机械设备"
+                  />
+                </div>
                 <span>{{ currentLang === 'en' ? 'Machinery' : '机械设备' }}</span>
               </a>
             </li>
             <li>
               <a href="javascript:void(0);">
-                <i class="icon-pro icon-wj"></i>
+                <div class="icon-pro">
+                  <img
+                    :src="getImageUrl('tubiao/玩具.png')"
+                    alt="玩具"
+                  />
+                </div>
                 <span>{{ currentLang === 'en' ? 'Toys' : '玩具' }}</span>
               </a>
             </li>
             <li>
               <a href="javascript:void(0);">
-                <i class="icon-pro icon-gysb"></i>
+                <div class="icon-pro">
+                  <img
+                    :src="getImageUrl('tubiao/工业设备.png')"
+                    alt="工业设备"
+                  />
+                </div>
                 <span>{{ currentLang === 'en' ? 'Industrial Equipment' : '工业设备' }}</span>
               </a>
             </li>
-            <li>
-              <a href="javascript:void(0);">
-                <i class="icon-pro icon-qt"></i>
-                <span>{{ currentLang === 'en' ? 'Others' : '其他' }}</span>
-              </a>
-            </li>
-          </ul>
+              <li>
+                <a href="javascript:void(0);">
+                  <div class="icon-pro">
+                    <img
+                      :src="getImageUrl('tubiao/其他.png')"
+                      alt="其他"
+                    />
+                  </div>
+                  <span>{{ currentLang === 'en' ? 'Others' : '其他' }}</span>
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>
@@ -353,7 +440,7 @@ import { getLaboratories } from '../api/laboratory'
 import { getHonors } from '../api/honor'
 import { getLatestNews } from '../api/news'
 import { getHomeConfigMap, getBannerValues, getIcons } from '../api/homeConfig'
-import { getTopCertificationCategories } from '../api/certification'
+import { getAllCertificationCategories } from '../api/certification'
 import { getImageUrl, processImageUrls } from '../utils/image'
 import { initAllScrollAnimations } from '../utils/scrollAnimation'
 import { useI18n } from '../utils/i18n'
@@ -398,9 +485,11 @@ export default {
     const certifications = ref([])
     
     // 格式化认证分类数据（用于“全球认证”模块）
+    // 这里显示的是“认证服务”下面的子分类（即有 parentId 的分类）
     const formatCertifications = (data) => {
       if (!data || !Array.isArray(data)) return []
       return data
+        .filter(item => item.parentId && item.parentId !== 0) // 只要子分类
         .map(item => ({
           id: item.id,
           name: currentLang.value === 'en'
@@ -464,7 +553,7 @@ export default {
           getHomeConfigMap('cn'),
           getBannerValues(),
           getIcons(),
-          getTopCertificationCategories()
+          getAllCertificationCategories()
         ])
 
         if (companyRes.code === 200) {
@@ -491,7 +580,7 @@ export default {
         if (iconsRes.code === 200) {
           icons.value = iconsRes.data || []
         }
-        // 使用后台认证分类主类（顶级分类）作为“全球认证”模块数据
+        // 使用后台所有分类中的子分类（认证服务下面的分类）作为“全球认证”模块数据
         if (categoriesRes.code === 200) {
           const categoryData = categoriesRes.data || []
           certifications.value = formatCertifications(categoryData)
@@ -1312,6 +1401,16 @@ export default {
   .ipro-list span {
     font-size: 12px;
   }
+
+  .cert-row {
+    gap: 18px;
+    /* 移动端也放慢一点，但比桌面端略快 */
+    animation-duration: 35s;
+  }
+
+  .cert-item {
+    min-width: 200px;
+  }
 }
 
 .certification-section,
@@ -1320,8 +1419,57 @@ export default {
   background: #fff;
 }
 
+/* 检测项目区域毛玻璃卡片背景 */
+.testing-section .container {
+  position: relative;
+}
+
+.testing-glass {
+  position: relative;
+  margin-top: 30px;
+  padding: 28px 26px 32px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.25);
+}
+
 .certification-section {
   background: #f8f9fa;
+}
+
+.cert-scroll-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  margin-top: 30px;
+}
+
+.cert-row {
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
+  padding: 10px 0;
+  white-space: nowrap;
+  width: fit-content;
+  /* 调整动画时长控制滑动速度；数值越大越慢 */
+  animation: scrollCerts 45s linear infinite;
+}
+
+.cert-item {
+  flex: 0 0 auto;
+  min-width: 220px;
+}
+
+@keyframes scrollCerts {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .certification-card {
@@ -1451,11 +1599,11 @@ export default {
 @keyframes iproBounceIn {
   0% {
     opacity: 0;
-    transform: translateY(40px) scale(0.9) rotate(0deg);
+    transform: translateY(40px) scale(0.9);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1) rotate(360deg);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -1482,11 +1630,15 @@ export default {
   justify-content: center;
   margin-bottom: 10px;
   color: #fff;
-  font-size: 26px;
-  font-weight: 600;
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  animation: iconGlow 2.2s ease-in-out infinite alternate;
+  overflow: hidden;
+  background: transparent;
+}
+
+.icon-pro img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .ipro-list a:hover .icon-pro {
