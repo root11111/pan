@@ -1051,6 +1051,36 @@ export default {
     font-size: 14px;
     margin-bottom: 20px;
   }
+
+  .banner-values {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 30px auto 20px;
+  }
+
+  .value-item {
+    padding: 20px 12px;
+  }
+
+  .value-item h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  .value-item p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .icon-circle {
+    width: 50px;
+    height: 50px;
+  }
+
+  .icon-circle::before {
+    width: 35px;
+    height: 35px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1072,6 +1102,36 @@ export default {
 
   .banner-desc {
     font-size: 13px;
+  }
+
+  .banner-values {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin: 25px auto 15px;
+  }
+
+  .value-item {
+    padding: 18px 10px;
+  }
+
+  .value-item h3 {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  .value-item p {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .icon-circle {
+    width: 45px;
+    height: 45px;
+  }
+
+  .icon-circle::before {
+    width: 30px;
+    height: 30px;
   }
 }
 
@@ -1096,7 +1156,7 @@ export default {
 
 .icon-showcase {
   background: #fff;
-  padding: 40px 0;
+  padding: 8px 0;
   overflow: hidden;
 }
 
@@ -1112,7 +1172,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 40px;
-  padding: 20px 0;
+  padding: 5px 0;
   white-space: nowrap;
   width: fit-content;
   animation: scrollIcons 30s linear infinite;
@@ -1196,8 +1256,8 @@ export default {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   overflow: hidden;
-  margin: 60px 0;
-  padding: 50px 0;
+  margin: 30px 0 60px;
+  padding: 90px 0;
   border-radius: 24px;
   box-shadow: 
     0 20px 60px rgba(0, 0, 0, 0.25),
