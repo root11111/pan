@@ -413,7 +413,7 @@ export default {
     const filterCategoryVisible = ref(false)
     const showImportDialog = ref(false)
     const importResult = ref(null)
-    const importUrl = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082/api'}/admin/certification/import`
+    const importUrl = `${import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8082/api' : '/api')}/admin/certification/import`
     const showPreviewCn = ref(false)
     const showPreviewEn = ref(false)
     const selectedIds = ref([])
@@ -435,13 +435,13 @@ export default {
       sortOrder: 0
     })
 
-    const uploadUrl = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082/api'}/file/upload`
+    const uploadUrl = `${import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8082/api' : '/api')}/file/upload`
     const uploadHeaders = {
       Authorization: `Bearer ${localStorage.getItem('admin_token')}`
     }
 
     const api = axios.create({
-      baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082/api',
+      baseURL: import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8082/api' : '/api'),
       headers: {
         Authorization: `Bearer ${localStorage.getItem('admin_token')}`
       }
@@ -555,7 +555,7 @@ export default {
     }
 
     const downloadTemplate = () => {
-      const templateUrl = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082/api'}/admin/certification/template`
+      const templateUrl = `${import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8082/api' : '/api')}/admin/certification/template`
       const link = document.createElement('a')
       link.href = templateUrl
       link.download = '认证服务导入模板.xlsx'

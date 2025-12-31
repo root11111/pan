@@ -172,13 +172,13 @@ export default {
     })
 
     const api = axios.create({
-      baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082/api',
+      baseURL: import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8082/api' : '/api'),
       headers: {
         Authorization: `Bearer ${localStorage.getItem('admin_token')}`
       }
     })
 
-    const uploadUrl = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082/api'}/admin/certificate/upload`
+    const uploadUrl = `${import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8082/api' : '/api')}/admin/certificate/upload`
     const uploadHeaders = {
       Authorization: `Bearer ${localStorage.getItem('admin_token')}`
     }

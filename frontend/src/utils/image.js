@@ -3,8 +3,8 @@
  * 将数据库中的相对路径转换为完整的访问URL
  */
 
-// 后端API基础URL（开发环境）
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082/api'
+// 后端API基础URL（生产环境使用相对路径，开发环境使用 localhost）
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8082/api' : '/api')
 
 /**
  * 简单的字符串哈希函数（用于生成稳定的缓存键）
@@ -40,6 +40,18 @@ export function getImageUrl(imagePath, cacheControl = true) {
     // 如果已经是完整URL且包含参数，直接返回（不添加额外参数）
     if (cacheControl === false) {
       return url
+    }
+  }
+  // 处理已经包含 /api/uploads/ 或 /api/upload/ 的路径（避免重复拼接）
+  else if (imagePath.startsWith('/api/uploads/') || imagePath.startsWith('/api/upload/')) {
+    // 检查是否有重复的 /api/uploads/ 路径（如：/api/uploads//api/uploads/xxx.png）
+    if (imagePath.includes('/api/uploads//api/uploads/') || imagePath.includes('/api/uploads//api/upload/')) {
+      // 移除重复的部分，只保留最后一个 /api/uploads/ 及其后面的路径
+      // 例如：/api/uploads//api/uploads/img/xxx.png -> /api/uploads/img/xxx.png
+      url = imagePath.replace(/\/api\/uploads?\/+\/api\/uploads?\/+/g, '/api/uploads/')
+    } else {
+      // 直接使用，因为已经是完整的API路径
+      url = imagePath
     }
   }
   // 处理以 /uploads/ 开头的路径（如：/uploads/xxx.jpg）
