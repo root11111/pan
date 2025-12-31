@@ -129,7 +129,13 @@
       center
     >
       <div class="qr-code-placeholder">
-        <el-icon :size="100"><ChatDotRound /></el-icon>
+        <img 
+          v-if="companyInfo?.qrCode" 
+          :src="getImageUrl(companyInfo.qrCode)" 
+          :alt="t('wechatQRCode')" 
+          class="qr-code-image"
+        />
+        <el-icon v-else :size="100"><ChatDotRound /></el-icon>
         <p>{{ t('scanQRCodeToAddWechat') }}</p>
         <p v-if="companyInfo?.wechat" class="wechat-text">{{ companyInfo.wechat }}</p>
       </div>
@@ -143,6 +149,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { Phone, Close, ChatLineRound, ChatDotRound, Message, Top } from '@element-plus/icons-vue'
 import { getCompanyInfo } from '../api/company'
 import { useI18n } from '../utils/i18n'
+import { getImageUrl } from '../utils/image'
 
 export default {
   name: 'ContactFloat',
@@ -228,6 +235,7 @@ export default {
       showBackTop,
       isAdminPage,
       t,
+      getImageUrl,
       callPhone,
       sendEmail,
       openQQ,
@@ -434,6 +442,18 @@ export default {
 .qr-code-placeholder .el-icon {
   color: #409eff;
   margin-bottom: 15px;
+}
+
+.qr-code-image {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 15px;
+  display: block;
+  border-radius: 8px;
+  border: 2px solid #f0f0f0;
+  background: #fff;
+  padding: 8px;
+  box-sizing: border-box;
 }
 
 .qr-code-placeholder p {
