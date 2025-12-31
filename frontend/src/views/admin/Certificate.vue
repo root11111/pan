@@ -99,14 +99,26 @@
             :on-success="handleFileSuccess"
             :show-file-list="false"
             drag
-            accept="image/*"
+            accept="image/*,.pdf"
           >
             <el-icon v-if="!form.certificateFile" class="el-icon--upload"><upload-filled /></el-icon>
             <div v-if="!form.certificateFile" class="el-upload__text">
               将证书文件拖到此处，或<em>点击上传</em>
             </div>
             <div v-if="form.certificateFile" style="text-align: center;">
-              <img :src="getImageUrl(form.certificateFile)" style="max-width: 300px; max-height: 300px; border-radius: 4px;" />
+              <!-- 图片预览 -->
+              <img 
+                v-if="isImageFile(form.certificateFile)" 
+                :src="getImageUrl(form.certificateFile)" 
+                style="max-width: 300px; max-height: 300px; border-radius: 4px;" 
+                @error="handleImageError"
+              />
+              <!-- PDF预览 -->
+              <div v-else-if="isPdfFile(form.certificateFile)" style="padding: 20px; background: #f5f7fa; border-radius: 4px;">
+                <el-icon :size="48" style="color: #409eff;"><Document /></el-icon>
+                <div style="margin-top: 10px; color: #606266;">PDF文件已上传</div>
+                <div style="font-size: 12px; color: #909399; margin-top: 5px;">{{ getFileName(form.certificateFile) }}</div>
+              </div>
               <div style="margin-top: 10px;">
                 <el-button size="small" type="primary" @click.stop="handleReupload">重新上传</el-button>
                 <el-button size="small" type="danger" @click.stop="form.certificateFile = ''">删除</el-button>
@@ -114,7 +126,7 @@
             </div>
             <template #tip>
               <div class="el-upload__tip" v-if="!form.certificateFile">
-                支持拖拽上传，只能上传图片文件
+                支持拖拽上传，支持图片文件（jpg、png等）和PDF文件
               </div>
             </template>
           </el-upload>
@@ -130,23 +142,44 @@
     </el-dialog>
 
     <!-- 文件查看对话框 -->
-    <el-dialog v-model="fileDialogVisible" title="查看证书文件" width="800px">
-      <img v-if="viewFileUrl" :src="viewFileUrl" style="width: 100%;" />
+    <el-dialog v-model="fileDialogVisible" title="查看证书文件" width="900px">
+      <!-- 图片显示 -->
+      <img 
+        v-if="viewFileUrl && isImageFile(viewFileUrl)" 
+        :src="viewFileUrl" 
+        style="width: 100%; max-height: 70vh; object-fit: contain;" 
+        @error="handleImageError"
+      />
+      <!-- PDF显示 -->
+      <iframe 
+        v-else-if="viewFileUrl && isPdfFile(viewFileUrl)" 
+        :src="viewFileUrl" 
+        style="width: 100%; height: 70vh; border: none;"
+      ></iframe>
+      <!-- 下载按钮 -->
+      <div style="text-align: center; margin-top: 20px;" v-if="viewFileUrl">
+        <el-button type="primary" @click="downloadFile(viewFileUrl)">
+          <el-icon><Download /></el-icon>
+          下载文件
+        </el-button>
+      </div>
     </el-dialog>
   </el-card>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { UploadFilled } from '@element-plus/icons-vue'
+import { UploadFilled, Document, Download } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { getImageUrl } from '../../utils/image'
 
 export default {
   name: 'AdminCertificate',
   components: {
-    UploadFilled
+    UploadFilled,
+    Document,
+    Download
   },
   setup() {
     const tableData = ref([])
@@ -283,9 +316,55 @@ export default {
       }
     }
 
+    // 判断是否为图片文件
+    const isImageFile = (filePath) => {
+      if (!filePath) return false
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']
+      const lowerPath = filePath.toLowerCase()
+      return imageExtensions.some(ext => lowerPath.endsWith(ext))
+    }
+
+    // 判断是否为PDF文件
+    const isPdfFile = (filePath) => {
+      if (!filePath) return false
+      return filePath.toLowerCase().endsWith('.pdf')
+    }
+
+    // 获取文件名
+    const getFileName = (filePath) => {
+      if (!filePath) return ''
+      const parts = filePath.split('/')
+      return parts[parts.length - 1]
+    }
+
+    // 处理图片加载错误
+    const handleImageError = (event) => {
+      if (event && event.target) {
+        event.target.style.display = 'none'
+      }
+    }
+
+    // 查看文件
     const viewFile = (filePath) => {
-      viewFileUrl.value = getImageUrl(filePath)
+      if (isPdfFile(filePath)) {
+        // PDF文件直接使用完整URL
+        viewFileUrl.value = getImageUrl(filePath)
+      } else {
+        // 图片文件使用getImageUrl处理
+        viewFileUrl.value = getImageUrl(filePath)
+      }
       fileDialogVisible.value = true
+    }
+
+    // 下载文件
+    const downloadFile = (fileUrl) => {
+      const link = document.createElement('a')
+      link.href = fileUrl
+      link.download = getFileName(fileUrl)
+      link.target = '_blank'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     }
 
     onMounted(() => {
@@ -313,7 +392,14 @@ export default {
       handleSave,
       handleDelete,
       viewFile,
-      getImageUrl
+      getImageUrl,
+      isImageFile,
+      isPdfFile,
+      getFileName,
+      handleImageError,
+      downloadFile,
+      Document,
+      Download
     }
   }
 }

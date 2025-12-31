@@ -6,14 +6,14 @@
       </div>
       <el-menu
         :default-active="activeMenu"
-        router
         class="admin-menu"
+        :router="false"
       >
-        <el-menu-item index="/admin/dashboard">
+        <el-menu-item index="/admin/dashboard" @click="handleMenuClick('/admin/dashboard', $event)">
           <el-icon><Odometer /></el-icon>
           <span>仪表盘</span>
         </el-menu-item>
-        <el-menu-item index="/admin/home-config">
+        <el-menu-item index="/admin/home-config" @click="handleMenuClick('/admin/home-config', $event)">
           <el-icon><HomeFilled /></el-icon>
           <span>首页配置</span>
         </el-menu-item>
@@ -22,17 +22,17 @@
             <el-icon><InfoFilled /></el-icon>
             <span>关于我们</span>
           </template>
-          <el-menu-item index="/admin/company">
+          <el-menu-item index="/admin/company" @click="handleMenuClick('/admin/company', $event)">
             <span>公司简介</span>
           </el-menu-item>
-          <el-menu-item index="/admin/advantage">
+          <el-menu-item index="/admin/advantage" @click="handleMenuClick('/admin/advantage', $event)">
             <span>企业优势</span>
           </el-menu-item>
-          <el-menu-item index="/admin/corporate-culture">
+          <el-menu-item index="/admin/corporate-culture" @click="handleMenuClick('/admin/corporate-culture', $event)">
             <span>企业文化</span>
           </el-menu-item>
         </el-sub-menu>
-        <el-menu-item index="/admin/laboratory">
+        <el-menu-item index="/admin/laboratory" @click="handleMenuClick('/admin/laboratory', $event)">
           <el-icon><School /></el-icon>
           <span>实验室管理</span>
         </el-menu-item>
@@ -41,30 +41,30 @@
             <el-icon><List /></el-icon>
             <span>认证服务</span>
           </template>
-          <el-menu-item index="/admin/certification-category">
+          <el-menu-item index="/admin/certification-category" @click="handleMenuClick('/admin/certification-category', $event)">
             <span>分类管理</span>
           </el-menu-item>
-          <el-menu-item index="/admin/certification">
+          <el-menu-item index="/admin/certification" @click="handleMenuClick('/admin/certification', $event)">
             <span>服务管理</span>
           </el-menu-item>
         </el-sub-menu>
-        <el-menu-item index="/admin/honor">
+        <el-menu-item index="/admin/honor" @click="handleMenuClick('/admin/honor', $event)">
           <el-icon><Trophy /></el-icon>
           <span>荣誉资质</span>
         </el-menu-item>
-        <el-menu-item index="/admin/certificate">
+        <el-menu-item index="/admin/certificate" @click="handleMenuClick('/admin/certificate', $event)">
           <el-icon><DocumentCopy /></el-icon>
           <span>证书管理</span>
         </el-menu-item>
-        <el-menu-item index="/admin/news">
+        <el-menu-item index="/admin/news" @click="handleMenuClick('/admin/news', $event)">
           <el-icon><Document /></el-icon>
           <span>新闻管理</span>
         </el-menu-item>
-        <el-menu-item index="/admin/message">
+        <el-menu-item index="/admin/message" @click="handleMenuClick('/admin/message', $event)">
           <el-icon><Message /></el-icon>
           <span>留言管理</span>
         </el-menu-item>
-        <el-menu-item index="/admin/chat">
+        <el-menu-item index="/admin/chat" @click="handleMenuClick('/admin/chat', $event)">
           <el-icon><ChatDotRound /></el-icon>
           <span>实时聊天</span>
         </el-menu-item>
@@ -123,12 +123,121 @@ export default {
     onMounted(() => {
       activeMenu.value = route.path
       nickname.value = localStorage.getItem('admin_nickname') || '管理员'
+      
+      // 在菜单容器上添加全局点击监听器（捕获阶段），拦截所有链接点击
+      const menuContainer = document.querySelector('.admin-menu')
+      if (menuContainer) {
+        menuContainer.addEventListener('click', (e) => {
+          // 查找点击的元素是否是链接或其父元素是链接
+          const link = e.target.closest('a')
+          if (link) {
+            e.preventDefault()
+            e.stopPropagation()
+            e.stopImmediatePropagation()
+            
+            // 获取路径
+            const href = link.getAttribute('href') || link.href
+            if (href && href !== '#' && href !== 'javascript:void(0)') {
+              // 提取路径（移除域名等）
+              const path = href.replace(/^https?:\/\/[^\/]+/, '') || href
+              if (path && path !== route.path && path.startsWith('/')) {
+                router.push(path).catch(err => {
+                  if (err.name !== 'NavigationDuplicated') {
+                    console.error('路由导航错误:', err)
+                  }
+                })
+              }
+            }
+            return false
+          }
+        }, true) // 使用捕获阶段，确保优先执行
+      }
+      
+      // 定期检查和移除所有链接的 href 属性
+      const removeHrefs = () => {
+        const links = document.querySelectorAll('.admin-menu .el-menu-item a')
+        links.forEach(link => {
+          if (link.href && !link.href.includes('javascript:')) {
+            const path = link.getAttribute('href') || link.href.replace(/^https?:\/\/[^\/]+/, '')
+            link.removeAttribute('href')
+            link.setAttribute('data-path', path)
+            link.style.cursor = 'pointer'
+            // 确保链接不会触发导航
+            link.onclick = (e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              e.stopImmediatePropagation()
+              return false
+            }
+          }
+        })
+      }
+      
+      // 立即执行一次
+      setTimeout(removeHrefs, 50)
+      
+      // 使用 MutationObserver 监听 DOM 变化，持续移除 href
+      const observer = new MutationObserver(() => {
+        removeHrefs()
+      })
+      
+      if (menuContainer) {
+        observer.observe(menuContainer, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['href']
+        })
+      }
     })
 
     // 监听路由变化，更新激活菜单
     watch(() => route.path, (newPath) => {
       activeMenu.value = newPath
     })
+
+    // 处理菜单点击，阻止默认行为并使用 Vue Router 导航
+    const handleMenuClick = (path, event) => {
+      // 彻底阻止所有默认行为和事件冒泡
+      if (event) {
+        if (typeof event.preventDefault === 'function') {
+          event.preventDefault()
+        }
+        if (typeof event.stopPropagation === 'function') {
+          event.stopPropagation()
+        }
+        if (typeof event.stopImmediatePropagation === 'function') {
+          event.stopImmediatePropagation()
+        }
+      }
+      
+      // 立即移除当前菜单项内所有链接的 href
+      if (event && event.target) {
+        const menuItem = event.target.closest('.el-menu-item')
+        if (menuItem) {
+          const links = menuItem.querySelectorAll('a')
+          links.forEach(link => {
+            if (link.href && !link.href.includes('javascript:')) {
+              link.removeAttribute('href')
+              link.style.cursor = 'pointer'
+            }
+          })
+        }
+      }
+      
+      if (path && path !== route.path) {
+        // 使用 Vue Router 进行客户端导航
+        router.push(path).catch(err => {
+          // 忽略重复导航错误
+          if (err.name !== 'NavigationDuplicated') {
+            console.error('路由导航错误:', err)
+          }
+        })
+      }
+      
+      // 返回 false 进一步阻止默认行为
+      return false
+    }
 
     const goToFrontend = () => {
       // 在新标签页打开前台首页
@@ -152,7 +261,8 @@ export default {
       activeMenu,
       nickname,
       goToFrontend,
-      handleLogout
+      handleLogout,
+      handleMenuClick
     }
   }
 }
@@ -198,6 +308,33 @@ export default {
 .admin-menu .el-menu-item.is-active {
   background: #409eff;
   color: #fff;
+}
+
+/* 完全阻止菜单项内的链接默认行为，使用 Vue Router 导航 */
+.admin-menu :deep(.el-menu-item a),
+.admin-menu :deep(.el-sub-menu .el-menu-item a) {
+  pointer-events: none !important;
+  text-decoration: none !important;
+  color: inherit !important;
+  cursor: pointer !important;
+}
+
+/* 阻止所有链接的点击行为 */
+.admin-menu :deep(.el-menu-item a[href]),
+.admin-menu :deep(.el-sub-menu .el-menu-item a[href]) {
+  pointer-events: none !important;
+}
+
+/* 确保菜单项本身可以点击 */
+.admin-menu :deep(.el-menu-item),
+.admin-menu :deep(.el-sub-menu .el-menu-item) {
+  cursor: pointer !important;
+}
+
+/* 阻止菜单项内的任何链接跳转 */
+.admin-menu :deep(.el-menu-item) a,
+.admin-menu :deep(.el-sub-menu .el-menu-item) a {
+  pointer-events: none !important;
 }
 
 /* 子菜单样式 */

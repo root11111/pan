@@ -26,7 +26,11 @@ public class AdminCertificateController {
     @Autowired
     private CertificateService certificateService;
     
-    private static final String UPLOAD_DIR = "D:/workspace/pan/uploads/certificates/";
+    // 开发环境：D:/workspace/pan/uploads/certificates/
+    // 生产环境：/www/wwwroot/www.tht-lab.com.cn/uploads/certificates/
+    private static final String UPLOAD_DIR = System.getProperty("user.dir").contains("workspace") 
+        ? "D:/workspace/pan/uploads/certificates/" 
+        : "/www/wwwroot/www.tht-lab.com.cn/uploads/certificates/";
     
     /**
      * 获取所有证书

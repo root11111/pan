@@ -64,7 +64,7 @@
       </el-card>
 
       <!-- 查询结果区域 -->
-      <div v-if="queryResult" class="result-section slide-in-bottom">
+      <div v-if="queryResult !== null" class="result-section slide-in-bottom">
         <el-card class="result-card">
           <div class="result-header">
             <h3>
@@ -87,9 +87,9 @@
           <div v-else class="result-list">
             <div 
               v-for="(item, index) in queryResult" 
-              :key="item.id" 
+              :key="item.id || index" 
               class="certificate-item scale-in"
-              :style="{ animationDelay: `${index * 0.1}s` }"
+              :style="{ animationDelay: `${index * 0.1}s`, opacity: 1, visibility: 'visible' }"
             >
               <div class="certificate-card">
                 <div class="certificate-header">
@@ -139,9 +139,10 @@
       <el-dialog
         v-model="detailVisible"
         :title="t('certificateDetails')"
-        width="900px"
+        width="95%"
         :close-on-click-modal="false"
         class="certificate-dialog"
+        style="max-width: 1200px;"
       >
         <div v-if="certificateDetail" class="certificate-detail">
           <div class="detail-header">
@@ -183,12 +184,28 @@
             </el-descriptions-item>
           </el-descriptions>
           <div v-if="certificateDetail.certificateFile" class="certificate-image-wrapper">
-            <div class="image-container">
+            <!-- 图片显示 -->
+            <div v-if="isImageFile(certificateDetail.certificateFile)" class="image-container">
               <img 
                 :src="getImageUrl(certificateDetail.certificateFile)" 
                 :alt="certificateDetail.certificateNo"
                 class="certificate-image"
+                @error="handleImageError"
               />
+            </div>
+            <!-- PDF显示 -->
+            <div v-else-if="isPdfFile(certificateDetail.certificateFile)" class="pdf-container">
+              <iframe 
+                :src="getImageUrl(certificateDetail.certificateFile)"
+                class="certificate-pdf"
+              ></iframe>
+            </div>
+            <!-- 下载按钮 -->
+            <div style="text-align: center; margin-top: 20px;">
+              <el-button type="primary" @click="downloadCertificateFile(certificateDetail.certificateFile)">
+                <el-icon><Download /></el-icon>
+                {{ t('download') || '下载证书文件' }}
+              </el-button>
             </div>
           </div>
         </div>
@@ -213,7 +230,8 @@ import {
   Files, 
   Calendar, 
   Clock, 
-  View 
+  View,
+  Download
 } from '@element-plus/icons-vue'
 import { queryCertificate, getCertificateById } from '../api/certificate'
 import { getImageUrl } from '../utils/image'
@@ -233,7 +251,8 @@ export default {
     Files,
     Calendar,
     Clock,
-    View
+    View,
+    Download
   },
   setup() {
     const { t, lang: currentLang } = useI18n()
@@ -259,12 +278,27 @@ export default {
           certificateNo: queryForm.value.certificateNo,
           productName: queryForm.value.productName
         })
+        console.log('查询结果:', res)
         if (res.code === 200) {
-          queryResult.value = res.data || []
+          // 确保 queryResult 被设置为数组，即使数据为空
+          const data = res.data || []
+          queryResult.value = Array.isArray(data) ? data : []
+          console.log('查询结果数据:', queryResult.value)
+          console.log('查询结果数量:', queryResult.value.length)
           if (queryResult.value.length === 0) {
             ElMessage.info(t('noCertificateFound'))
+            // 即使没有结果，也要显示结果区域（显示空状态）
+            queryResult.value = []
           } else {
             ElMessage.success(`${t('totalRecords')} ${queryResult.value.length} ${t('records')}`)
+            // 确保结果区域显示，滚动到结果区域
+            await nextTick()
+            setTimeout(() => {
+              const resultSection = document.querySelector('.result-section')
+              if (resultSection) {
+                resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }
+            }, 200)
           }
         } else {
           ElMessage.error(res.message || t('queryFailed'))
@@ -277,6 +311,47 @@ export default {
       } finally {
         loading.value = false
       }
+    }
+
+    // 判断是否为图片文件
+    const isImageFile = (filePath) => {
+      if (!filePath) return false
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']
+      const lowerPath = filePath.toLowerCase()
+      return imageExtensions.some(ext => lowerPath.endsWith(ext))
+    }
+
+    // 判断是否为PDF文件
+    const isPdfFile = (filePath) => {
+      if (!filePath) return false
+      return filePath.toLowerCase().endsWith('.pdf')
+    }
+
+    // 获取文件名
+    const getFileName = (filePath) => {
+      if (!filePath) return ''
+      const parts = filePath.split('/')
+      return parts[parts.length - 1]
+    }
+
+    // 处理图片加载错误
+    const handleImageError = (event) => {
+      if (event && event.target) {
+        event.target.style.display = 'none'
+      }
+    }
+
+    // 下载证书文件
+    const downloadCertificateFile = (filePath) => {
+      if (!filePath) return
+      const fileUrl = getImageUrl(filePath)
+      const link = document.createElement('a')
+      link.href = fileUrl
+      link.download = getFileName(filePath) || 'certificate'
+      link.target = '_blank'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     }
 
     const viewDetail = async (row) => {
@@ -312,7 +387,14 @@ export default {
       viewDetail,
       getImageUrl,
       t,
-      currentLang
+      currentLang,
+      View,
+      Download,
+      isImageFile,
+      isPdfFile,
+      getFileName,
+      handleImageError,
+      downloadCertificateFile
     }
   }
 }
@@ -468,6 +550,9 @@ export default {
 
 .result-section {
   margin-top: 40px;
+  display: block;
+  visibility: visible;
+  opacity: 1;
 }
 
 .result-card {
@@ -503,11 +588,13 @@ export default {
   padding: 30px 40px;
   display: grid;
   gap: 24px;
+  min-height: 100px;
 }
 
 .certificate-item {
   animation: scaleIn 0.5s ease-out forwards;
-  opacity: 0;
+  opacity: 1;
+  visibility: visible;
 }
 
 .certificate-item.animate-in {
@@ -752,7 +839,9 @@ export default {
 }
 
 .certificate-dialog :deep(.el-dialog__body) {
-  padding: 30px;
+  padding: 20px 30px;
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 .detail-header {
@@ -825,6 +914,15 @@ export default {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
+.pdf-container {
+  width: 100%;
+  padding: 0;
+  background: #f8f9ff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
 .certificate-image {
   max-width: 100%;
   max-height: 500px;
@@ -835,6 +933,15 @@ export default {
 
 .certificate-image:hover {
   transform: scale(1.02);
+}
+
+.certificate-pdf {
+  width: 100%;
+  height: 75vh;
+  min-height: 650px;
+  max-height: 800px;
+  border: none;
+  display: block;
 }
 </style>
 

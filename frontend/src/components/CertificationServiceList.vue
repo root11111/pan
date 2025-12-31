@@ -260,9 +260,18 @@ export default {
     }
 
     const handleImageError = (event) => {
-      if (event.target && event.target.parentElement) {
+      // 阻止错误传播到控制台（静默处理404）
+      if (event && event.preventDefault) {
+        event.preventDefault()
+      }
+      if (event && event.stopPropagation) {
+        event.stopPropagation()
+      }
+      // 隐藏图片容器
+      if (event && event.target && event.target.parentElement) {
         event.target.parentElement.style.display = 'none'
       }
+      return false
     }
 
     const handleImageLoad = (event) => {

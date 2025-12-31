@@ -2,12 +2,14 @@
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">
-        <h3>快速导航</h3>
+        <h3>{{ t('quickNav') }}</h3>
         <ul>
-          <li><router-link to="/">首页</router-link></li>
-          <li><router-link to="/about">关于我们</router-link></li>
-          <li><router-link to="/laboratory">实验室展示</router-link></li>
-          <li><router-link to="/certification">认证服务</router-link></li>
+          <li><router-link to="/">{{ t('home') }}</router-link></li>
+          <li><router-link to="/about">{{ t('about') }}</router-link></li>
+          <li><router-link to="/laboratory">{{ t('laboratory') }}</router-link></li>
+          <li><router-link to="/certification">{{ t('certification') }}</router-link></li>
+          <li><router-link to="/certificate">{{ t('certificate') }}</router-link></li>
+          <li><router-link to="/contact">联系我们</router-link></li>
         </ul>
       </div>
       <div class="footer-section">
@@ -16,7 +18,6 @@
           <li><router-link to="/honor">荣誉资质</router-link></li>
           <li><router-link to="/news">新闻资讯</router-link></li>
           <li><router-link to="/message">在线留言</router-link></li>
-          <li><router-link to="/contact">联系我们</router-link></li>
         </ul>
       </div>
       <div class="footer-section contact-section">
@@ -113,7 +114,8 @@ export default {
 
 .footer-section ul li a {
   color: #ccc;
-  transition: color 0.3s;
+  transition: all 0.3s;
+  display: inline-block;
 }
 
 .footer-section ul li a:hover {
@@ -184,6 +186,87 @@ export default {
 
   .footer-section h3 {
     font-size: 16px;
+  }
+
+  /* 快速导航在移动端显示为长方形按钮，紧密排列 */
+  .footer-section:first-child ul {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .footer-section:first-child ul li {
+    margin-bottom: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .footer-section:first-child ul li:nth-child(3n) {
+    border-right: none;
+  }
+
+  .footer-section:first-child ul li:nth-last-child(-n+3) {
+    border-bottom: none;
+  }
+
+  .footer-section:first-child ul li a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    padding: 0 8px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+    text-align: center;
+    color: #fff;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 0;
+    line-height: 1.2;
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  }
+
+  .footer-section:first-child ul li a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    opacity: 0.6;
+  }
+
+  .footer-section:first-child ul li a:hover,
+  .footer-section:first-child ul li a:active {
+    background: linear-gradient(180deg, rgba(64, 158, 255, 0.35) 0%, rgba(64, 158, 255, 0.2) 100%);
+    color: #fff;
+    z-index: 1;
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+      0 4px 8px rgba(64, 158, 255, 0.3),
+      0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+    border-top-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .footer-section:first-child ul li a:active {
+    transform: translateY(0);
+    box-shadow: 
+      inset 0 2px 4px rgba(0, 0, 0, 0.2),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+      0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
   .qr-code-section {

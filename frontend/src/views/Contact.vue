@@ -299,14 +299,14 @@ export default {
 
 .contact-card :deep(.el-input__inner),
 .contact-card :deep(.el-textarea__inner) {
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
   border-color: rgba(255, 255, 255, 0.3) !important;
-  color: #fff !important;
+  color: #333 !important;
 }
 
 .contact-card :deep(.el-input__inner::placeholder),
 .contact-card :deep(.el-textarea__inner::placeholder) {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: rgba(0, 0, 0, 0.5) !important;
 }
 
 .contact-card :deep(.el-card__body) {

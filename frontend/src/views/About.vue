@@ -145,10 +145,20 @@ export default {
       }
     }
 
-    // 处理图片加载错误
+    // 处理图片加载错误（静默处理404）
     const handleImageError = (event) => {
+      // 阻止错误传播到控制台
+      if (event && event.preventDefault) {
+        event.preventDefault()
+      }
+      if (event && event.stopPropagation) {
+        event.stopPropagation()
+      }
       // 图片加载失败时，隐藏图片或显示占位符
-      event.target.style.display = 'none'
+      if (event && event.target) {
+        event.target.style.display = 'none'
+      }
+      return false
     }
 
     return {

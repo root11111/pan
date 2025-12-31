@@ -134,7 +134,7 @@ export default {
       qrCode: ''
     })
 
-    const uploadUrl = '/api/file/upload'
+    const uploadUrl = `${import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8082/api' : '/api')}/file/upload`
     const uploadHeaders = {
       Authorization: `Bearer ${localStorage.getItem('admin_token')}`
     }

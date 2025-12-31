@@ -95,7 +95,12 @@
               v-for="item in certifications"
               :key="`cert-1-${item.id}`"
             >
-              <el-card class="certification-card hover-lift" shadow="hover">
+              <el-card 
+                class="certification-card hover-lift" 
+                shadow="hover"
+                @click="goToCertificationCategory(item.id)"
+                style="cursor: pointer;"
+              >
                 <div class="certification-icon">
                   <img
                     v-if="item.icon"
@@ -117,7 +122,12 @@
               v-for="item in certifications"
               :key="`cert-2-${item.id}`"
             >
-              <el-card class="certification-card hover-lift" shadow="hover">
+              <el-card 
+                class="certification-card hover-lift" 
+                shadow="hover"
+                @click="goToCertificationCategory(item.id)"
+                style="cursor: pointer;"
+              >
                 <div class="certification-icon">
                   <img
                     v-if="item.icon"
@@ -444,6 +454,7 @@ import { getAllCertificationCategories } from '../api/certification'
 import { getImageUrl, processImageUrls } from '../utils/image'
 import { initAllScrollAnimations } from '../utils/scrollAnimation'
 import { useI18n } from '../utils/i18n'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'Home',
@@ -455,6 +466,7 @@ export default {
     View
   },
   setup() {
+    const router = useRouter()
     const { t, lang: currentLang } = useI18n()
     const companyInfo = ref(null)
     const advantages = ref([])
@@ -663,30 +675,59 @@ export default {
       return uniqueLines.join('\n')
     }
 
-    // 处理图片加载错误
+    // 处理图片加载错误（静默处理404）
     const handleImageError = (event) => {
-      // 图片加载失败时，隐藏图片
-      event.target.style.display = 'none'
-      // 显示占位符
-      const placeholder = event.target.nextElementSibling
-      if (placeholder && placeholder.classList.contains('icon-placeholder')) {
-        placeholder.style.display = 'flex'
+      // 阻止错误传播到控制台
+      if (event && event.preventDefault) {
+        event.preventDefault()
       }
+      if (event && event.stopPropagation) {
+        event.stopPropagation()
+      }
+      // 图片加载失败时，隐藏图片
+      if (event && event.target) {
+        event.target.style.display = 'none'
+        // 显示占位符
+        const placeholder = event.target.nextElementSibling
+        if (placeholder && placeholder.classList && placeholder.classList.contains('icon-placeholder')) {
+          placeholder.style.display = 'flex'
+        }
+      }
+      return false
     }
     
     // 处理图片加载成功
     const handleImageLoad = (event, item) => {
       // 图片加载成功时，隐藏占位符
-      const placeholder = event.target.nextElementSibling
-      if (placeholder && placeholder.classList.contains('icon-placeholder')) {
-        placeholder.style.display = 'none'
+      if (event && event.target) {
+        const placeholder = event.target.nextElementSibling
+        if (placeholder && placeholder.classList && placeholder.classList.contains('icon-placeholder')) {
+          placeholder.style.display = 'none'
+        }
       }
     }
     
-    // 处理图标加载错误
+    // 处理图标加载错误（静默处理404）
     const handleIconError = (event) => {
+      // 阻止错误传播到控制台
+      if (event && event.preventDefault) {
+        event.preventDefault()
+      }
+      if (event && event.stopPropagation) {
+        event.stopPropagation()
+      }
       // 图标加载失败时，隐藏图标
-      event.target.style.display = 'none'
+      if (event && event.target) {
+        event.target.style.display = 'none'
+      }
+      return false
+    }
+
+    // 跳转到认证分类页面
+    const goToCertificationCategory = (categoryId) => {
+      if (categoryId) {
+        router.push(`/certification?categoryId=${categoryId}`)
+      }
     }
 
     return {
@@ -707,6 +748,7 @@ export default {
       handleImageError,
       handleImageLoad,
       handleIconError,
+      goToCertificationCategory,
       filteredIcons,
       newsScrollRef,
       pauseAutoScroll,
@@ -942,7 +984,11 @@ export default {
 /* 移动端 Banner 适配 */
 @media (max-width: 768px) {
   .banner {
-    padding: 60px 15px;
+    padding: 140px 15px 60px;
+  }
+
+  .banner-text {
+    margin-top: 40px;
   }
 
   .banner-title {
@@ -962,6 +1008,14 @@ export default {
 }
 
 @media (max-width: 480px) {
+  .banner {
+    padding: 120px 15px 50px;
+  }
+
+  .banner-text {
+    margin-top: 30px;
+  }
+
   .banner-title {
     font-size: 24px;
   }

@@ -14,8 +14,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
     
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 开发环境：D:/workspace/pan/uploads/
+        // 生产环境：/www/wwwroot/www.tht-lab.com.cn/uploads/
+        String uploadPath = System.getProperty("user.dir").contains("workspace") 
+            ? "file:D:/workspace/pan/uploads/" 
+            : "file:/www/wwwroot/www.tht-lab.com.cn/uploads/";
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:D:/workspace/pan/uploads/");
+                .addResourceLocations(uploadPath);
     }
     
     @Override

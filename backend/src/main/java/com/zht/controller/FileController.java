@@ -13,7 +13,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/file")
 public class FileController {
-    private static final String UPLOAD_DIR = "D:/workspace/pan/uploads/";
+    // 开发环境：D:/workspace/pan/uploads/
+    // 生产环境：/www/wwwroot/www.tht-lab.com.cn/uploads/
+    private static final String UPLOAD_DIR = System.getProperty("user.dir").contains("workspace") 
+        ? "D:/workspace/pan/uploads/" 
+        : "/www/wwwroot/www.tht-lab.com.cn/uploads/";
 
     @PostMapping("/upload")
     public Result<String> uploadFile(MultipartFile file) {
