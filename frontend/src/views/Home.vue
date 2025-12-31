@@ -556,46 +556,92 @@ export default {
 
     onMounted(async () => {
       try {
-        const [companyRes, advantageRes, labRes, honorRes, newsRes, configRes, valuesRes, iconsRes, categoriesRes] = await Promise.all([
-          getCompanyInfo(),
-          getAdvantages(),
-          getLaboratories(),
-          getHonors(),
-          getLatestNews(6),
-          getHomeConfigMap('cn'),
-          getBannerValues(),
-          getIcons(),
-          getAllCertificationCategories()
-        ])
+        // 依次加载数据，从上到下，每个部分加载完成后立即显示
+        
+        // 1. 加载 Banner 相关数据（最顶部）
+        try {
+          const [configRes, valuesRes, companyRes] = await Promise.all([
+            getHomeConfigMap('cn'),
+            getBannerValues(),
+            getCompanyInfo()
+          ])
+          
+          if (configRes.code === 200) {
+            homeConfig.value = configRes.data || {}
+          }
+          if (valuesRes.code === 200) {
+            bannerValues.value = valuesRes.data || []
+          }
+          if (companyRes.code === 200) {
+            companyInfo.value = processImageUrls(companyRes.data, ['logo'])
+          }
+        } catch (error) {
+          console.error('加载Banner数据失败:', error)
+        }
 
-        if (companyRes.code === 200) {
-          companyInfo.value = processImageUrls(companyRes.data, ['logo'])
+        // 2. 加载图标展示（第二个模块）
+        try {
+          const iconsRes = await getIcons()
+          if (iconsRes.code === 200) {
+            icons.value = iconsRes.data || []
+          }
+        } catch (error) {
+          console.error('加载图标数据失败:', error)
         }
-        if (advantageRes.code === 200) {
-          advantages.value = processImageUrls(advantageRes.data, ['icon'])
+
+        // 3. 公司简介（使用已加载的 companyInfo，无需额外加载）
+
+        // 4. 加载全球认证分类（第四个模块）
+        try {
+          const categoriesRes = await getAllCertificationCategories()
+          if (categoriesRes.code === 200) {
+            const categoryData = categoriesRes.data || []
+            certifications.value = formatCertifications(categoryData)
+          }
+        } catch (error) {
+          console.error('加载认证分类数据失败:', error)
         }
-        if (labRes.code === 200) {
-          laboratories.value = processImageUrls(labRes.data, ['image'])
+
+        // 5. 检测项目（静态数据，无需加载）
+
+        // 6. 加载企业优势（第六个模块）
+        try {
+          const advantageRes = await getAdvantages()
+          if (advantageRes.code === 200) {
+            advantages.value = processImageUrls(advantageRes.data, ['icon'])
+          }
+        } catch (error) {
+          console.error('加载企业优势数据失败:', error)
         }
-        if (honorRes.code === 200) {
-          honors.value = processImageUrls(honorRes.data, ['image'])
+
+        // 7. 加载实验室中心（第七个模块）
+        try {
+          const labRes = await getLaboratories()
+          if (labRes.code === 200) {
+            laboratories.value = processImageUrls(labRes.data, ['image'])
+          }
+        } catch (error) {
+          console.error('加载实验室数据失败:', error)
         }
-        if (newsRes.code === 200) {
-          latestNews.value = processImageUrls(newsRes.data, ['image'])
+
+        // 8. 加载荣誉资质（第八个模块）
+        try {
+          const honorRes = await getHonors()
+          if (honorRes.code === 200) {
+            honors.value = processImageUrls(honorRes.data, ['image'])
+          }
+        } catch (error) {
+          console.error('加载荣誉资质数据失败:', error)
         }
-        if (configRes.code === 200) {
-          homeConfig.value = configRes.data || {}
-        }
-        if (valuesRes.code === 200) {
-          bannerValues.value = valuesRes.data || []
-        }
-        if (iconsRes.code === 200) {
-          icons.value = iconsRes.data || []
-        }
-        // 使用后台所有分类中的子分类（认证服务下面的分类）作为“全球认证”模块数据
-        if (categoriesRes.code === 200) {
-          const categoryData = categoriesRes.data || []
-          certifications.value = formatCertifications(categoryData)
+
+        // 9. 加载新闻资讯（最后一个模块）
+        try {
+          const newsRes = await getLatestNews(6)
+          if (newsRes.code === 200) {
+            latestNews.value = processImageUrls(newsRes.data, ['image'])
+          }
+        } catch (error) {
+          console.error('加载新闻数据失败:', error)
         }
 
         // 等待DOM完全渲染后初始化滚动动画
@@ -604,7 +650,7 @@ export default {
           initAllScrollAnimations()
         }, 100)
 
-        // 初始化“检测项目”图标滚动进入视口时的弹出动画
+        // 初始化"检测项目"图标滚动进入视口时的弹出动画
         if (typeof window !== 'undefined' && 'IntersectionObserver' in window && testingIconsRef.value) {
           testingIconsObserver = new IntersectionObserver(
             (entries) => {
