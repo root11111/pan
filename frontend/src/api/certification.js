@@ -8,6 +8,10 @@ export const getCertificationsByCategory = (category) => {
   return api.get('/certification/category', { params: { category } })
 }
 
+export const getCertificationsByCategoryId = (categoryId) => {
+  return api.get('/certification/category-id', { params: { categoryId } })
+}
+
 export const getCertificationById = (id) => {
   return api.get(`/certification/${id}`)
 }

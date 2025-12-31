@@ -9,144 +9,133 @@
       </div>
     </div>
 
-    <div class="container" style="padding: 0px 20px 60px 20px;">
-      <el-tabs v-model="activeCategoryId" @tab-change="handleCategoryChange">
-        <el-tab-pane 
-          v-for="category in tabCategories" 
-          :key="category.id" 
-          :label="currentLang === 'en' ? category.nameEn : category.nameCn" 
-          :name="category.id"
-        ></el-tab-pane>
-      </el-tabs>
-
-      <!-- 当没有选择任何分类（activeCategoryId为null）时，显示所有服务，不按分类分组 -->
-      <div v-if="activeCategoryId === null" style="margin-top: 40px;">
-        <el-row :gutter="30" style="margin-top: 20px;" v-if="getServicesByCategory(null).length > 0">
-          <el-col :xs="24" :sm="12" :md="8" v-for="service in getServicesByCategory(null)" :key="service.id">
-            <el-card class="service-card" shadow="hover" @click="goToDetail(service.id)">
-              <div class="service-image-wrapper" v-if="service.image || (service.descriptionCn && isImage(service.descriptionCn))">
-                <img 
-                  :src="getServiceImage(service)" 
-                  :alt="service.nameCn" 
-                  class="service-image" 
-                />
-              </div>
-              <div class="service-content">
-                <h3>{{ service.nameCn }}</h3>
-                <p class="service-name-en">{{ service.nameEn }}</p>
-                <p v-if="getSummary(service)" class="service-summary">{{ getSummary(service) }}</p>
-                <el-tag v-if="service.region" type="primary" size="small" style="margin-bottom: 10px;">{{ service.region }}</el-tag>
-                <div class="service-desc" v-if="service.descriptionCn">
-                  <div v-if="isHtml(service.descriptionCn)" v-html="formatDescription(service.descriptionCn)"></div>
-                  <p v-else>{{ formatDescription(service.descriptionCn) }}</p>
-                </div>
-                <!-- 子菜单 -->
-                <div v-if="getChildServices(service.id).length > 0" class="child-services">
-                  <el-divider content-position="left">子服务</el-divider>
-                  <div class="child-service-list">
-                    <el-tag 
-                      v-for="child in getChildServices(service.id)" 
-                      :key="child.id"
-                      class="child-tag"
-                      @click.stop="goToDetail(child.id)"
-                    >
-                      {{ child.nameCn }}
-                    </el-tag>
-                  </div>
-                </div>
-              </div>
-            </el-card>
-          </el-col>
-        </el-row>
-        <div v-else style="text-align: center; padding: 40px; color: #909399;">
-          暂无服务
-        </div>
-      </div>
-
-      <!-- 按分类分组显示 -->
-      <div v-else v-for="category in displayCategories" :key="category.id" style="margin-top: 40px;">
-        <h2 class="category-title">{{ currentLang === 'en' ? category.nameEn : category.nameCn }}</h2>
-        <p class="category-subtitle" v-if="category.nameEn && currentLang === 'zh'">{{ category.nameEn }}</p>
-        <p class="category-subtitle" v-if="category.nameCn && currentLang === 'en'">{{ category.nameCn }}</p>
-        
-        <!-- 如果有子分类，显示子分类列表 -->
-        <div v-if="category.children && category.children.length > 0" class="sub-categories" style="margin-top: 20px; margin-bottom: 20px;">
-          <el-tag 
-            v-for="subCategory in category.children" 
-            :key="subCategory.id"
-            :type="activeCategoryId === subCategory.id ? 'primary' : ''"
-            style="margin-right: 10px; margin-bottom: 10px; cursor: pointer;"
-            @click="activeCategoryId = subCategory.id"
-          >
-            {{ currentLang === 'en' ? subCategory.nameEn : subCategory.nameCn }}
-          </el-tag>
-        </div>
-        
-        <!-- 顶级服务 -->
-        <el-row :gutter="30" style="margin-top: 20px;" v-if="getServicesByCategory(category.id).length > 0" class="service-list">
-          <el-col :xs="24" :sm="12" :md="8" v-for="service in getServicesByCategory(category.id)" :key="service.id">
-            <el-card class="service-card scale-in hover-lift" shadow="hover" @click="goToDetail(service.id)">
-              <div class="service-image-wrapper" v-if="service.image || (service.descriptionCn && isImage(service.descriptionCn))">
-                <img 
-                  :src="getServiceImage(service)" 
-                  :alt="service.nameCn" 
-                  class="service-image" 
-                />
-              </div>
-              <div class="service-content">
-                <h3>{{ service.nameCn }}</h3>
-                <p class="service-name-en">{{ service.nameEn }}</p>
-                <p v-if="getSummary(service)" class="service-summary">{{ getSummary(service) }}</p>
-                <el-tag v-if="service.region" type="primary" size="small" style="margin-bottom: 10px;">{{ service.region }}</el-tag>
-                <div class="service-desc" v-if="service.descriptionCn">
-                  <div v-if="isHtml(service.descriptionCn)" v-html="formatDescription(service.descriptionCn)"></div>
-                  <p v-else>{{ formatDescription(service.descriptionCn) }}</p>
-                </div>
-                <!-- 子菜单 -->
-                <div v-if="getChildServices(service.id).length > 0" class="child-services">
-                  <el-divider content-position="left">子服务</el-divider>
-                  <div class="child-service-list">
-                    <el-tag 
-                      v-for="child in getChildServices(service.id)" 
-                      :key="child.id"
-                      class="child-tag"
-                      @click.stop="goToDetail(child.id)"
-                    >
-                      {{ child.nameCn }}
-                    </el-tag>
-                  </div>
-                </div>
-              </div>
-            </el-card>
-          </el-col>
-        </el-row>
-        <div v-else style="text-align: center; padding: 40px; color: #909399;">
-          该分类下暂无服务
-          <!-- 调试信息 -->
-          <details v-if="getAllServicesByCategory(category.id).length > 0" style="margin-top: 20px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
-            <summary style="cursor: pointer; color: #409eff;">调试：该分类下有 {{ getAllServicesByCategory(category.id).length }} 个服务（包括子服务）</summary>
-            <div style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
-              <div v-for="s in getAllServicesByCategory(category.id)" :key="s.id" style="margin-bottom: 10px; padding: 10px; background: #fff; border-radius: 4px;">
-                <p><strong>{{ s.nameCn }}</strong> (ID: {{ s.id }})</p>
-                <p style="font-size: 12px; color: #666;">
-                  categoryId: {{ s.categoryId }} (类型: {{ typeof s.categoryId }})<br>
-                  parentId: {{ s.parentId }} (类型: {{ typeof s.parentId }})<br>
-                  <span v-if="s.parentId && s.parentId !== 0 && s.parentId !== '0' && s.parentId !== null" style="color: #f56c6c;">
-                    ⚠️ 这是子服务，不会被显示（parentId不为空）
+    <div class="container certification-container">
+      <div class="certification-layout">
+        <!-- 左侧分类导航 -->
+        <div class="left-sidebar">
+          <div class="left_inside_left">
+            <strong>认证服务</strong>
+            <ul class="category-tree">
+              <li v-for="category in topCategories" :key="category.id" class="category-item">
+                <div class="category-row">
+                  <span 
+                    v-if="category.children && category.children.length > 0"
+                    class="expand-icon"
+                    :class="{ 'expanded': expandedCategories.has(category.id) }"
+                    @click.stop="toggleCategory(category.id)"
+                  >
+                    ▶
                   </span>
-                  <span v-else style="color: #67c23a;">
-                    ✓ 这是顶级服务，应该被显示
-                  </span>
-                </p>
-              </div>
+                  <span v-else class="expand-icon-placeholder"></span>
+                  <a 
+                    :class="{ 'selected_color': activeCategoryId === category.id }"
+                    href="javascript:void(0)"
+                    @click="handleCategoryChange(category.id)"
+                  >
+                    {{ currentLang === 'en' ? category.nameEn : category.nameCn }}
+                  </a>
+                </div>
+                <!-- 子分类 -->
+                <ul 
+                  v-if="category.children && category.children.length > 0 && expandedCategories.has(category.id)"
+                  class="sub-category-list"
+                >
+                  <li v-for="subCategory in category.children" :key="subCategory.id" class="sub-category-item">
+                    <a 
+                      :class="{ 'selected_color': activeCategoryId === subCategory.id }"
+                      href="javascript:void(0)"
+                      @click="handleCategoryChange(subCategory.id)"
+                    >
+                      {{ currentLang === 'en' ? subCategory.nameEn : subCategory.nameCn }}
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 右侧内容区域 -->
+        <div class="right-content">
+          <!-- 显示分类标题 -->
+          <div v-if="activeCategoryId !== null && currentCategory" style="margin-top: 40px; margin-bottom: 20px;">
+            <h2 class="category-title">{{ currentLang === 'en' ? currentCategory.nameEn : currentCategory.nameCn }}</h2>
+            <p class="category-subtitle" v-if="currentCategory.nameEn && currentLang === 'zh'">{{ currentCategory.nameEn }}</p>
+            <p class="category-subtitle" v-if="currentCategory.nameCn && currentLang === 'en'">{{ currentCategory.nameCn }}</p>
+          </div>
+          
+          <!-- 服务列表 -->
+          <div style="margin-top: 40px;">
+            <div v-if="isLoading" style="text-align: center; padding: 40px;">
+              <p>加载中...</p>
             </div>
-          </details>
+            <template v-else-if="displayServices && displayServices.length > 0">
+              <div class="service-list-wrapper" style="margin-top: 20px;">
+                <div class="service-list" style="display: flex; flex-wrap: wrap; gap: 30px; justify-content: flex-start;">
+                  <el-card 
+                    v-for="service in displayServices" 
+                    :key="`service-${service.id}`"
+                    class="service-card hover-lift" 
+                    shadow="hover" 
+                    @click="goToDetail(service.id)"
+                    style="width: calc(33.333% - 20px); min-width: 300px; flex: 0 0 auto; margin-bottom: 0; opacity: 1; visibility: visible;"
+                  >
+                    <div class="service-image-wrapper" v-if="service.image || (service.descriptionCn && isImage(service.descriptionCn))">
+                      <img 
+                        :src="getServiceImage(service)" 
+                        :alt="service.nameCn" 
+                        class="service-image"
+                        @error="handleImageError($event)"
+                        @load="handleImageLoad($event)"
+                      />
+                    </div>
+                    <div class="service-content">
+                      <h3>{{ service.nameCn }}</h3>
+                      <p class="service-name-en">{{ service.nameEn }}</p>
+                      <p v-if="getSummary(service)" class="service-summary">{{ getSummary(service) }}</p>
+                      <el-tag v-if="service.region" type="primary" size="small" style="margin-bottom: 10px;">{{ service.region }}</el-tag>
+                      <div class="service-desc" v-if="service.descriptionCn">
+                        <div v-if="isHtml(service.descriptionCn)" v-html="formatDescription(service.descriptionCn)"></div>
+                        <p v-else>{{ formatDescription(service.descriptionCn) }}</p>
+                      </div>
+                      <!-- 子菜单 -->
+                      <div v-if="getChildServices(service.id).length > 0" class="child-services">
+                        <el-divider content-position="left">子服务</el-divider>
+                        <div class="child-service-list">
+                          <el-tag 
+                            v-for="child in getChildServices(service.id)" 
+                            :key="child.id"
+                            class="child-tag"
+                            @click.stop="goToDetail(child.id)"
+                          >
+                            {{ child.nameCn }}
+                          </el-tag>
+                        </div>
+                      </div>
+                    </div>
+                  </el-card>
+                </div>
+              </div>
+            </template>
+            <div v-else style="text-align: center; padding: 40px; color: #909399;">
+              <p v-if="activeCategoryId === null">暂无服务</p>
+              <p v-else>该分类下暂无服务</p>
+            </div>
+            
+            <!-- 分页组件 -->
+            <div v-if="!isLoading && totalServices > 0" style="margin-top: 40px; display: flex; justify-content: center;">
+              <el-pagination
+                v-model:current-page="currentPage"
+                v-model:page-size="pageSize"
+                :page-sizes="[10, 20, 30, 40]"
+                :total="totalServices"
+                layout="total, sizes, prev, pager, next, jumper"
+                @current-change="handlePageChange"
+                @size-change="handleSizeChange"
+              />
+            </div>
+          </div>
         </div>
-      </div>
-      
-      <!-- 如果没有分类数据 -->
-      <div v-if="displayCategories.length === 0" style="text-align: center; padding: 60px; color: #909399;">
-        <p>暂无分类数据</p>
       </div>
     </div>
 
@@ -155,14 +144,13 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, watch, nextTick } from 'vue'
-import { initAllScrollAnimations } from '../utils/scrollAnimation'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Header from '../components/Header.vue'
 import Footer from '../components/Footer.vue'
-import { getCertifications, getCertificationCategories } from '../api/certification'
+import { getCertifications, getCertificationCategories, getCertificationsByCategoryId } from '../api/certification'
 import { getImageUrl } from '../utils/image'
-import { useI18n, getCurrentLang } from '../utils/i18n'
+import { useI18n } from '../utils/i18n'
 
 export default {
   name: 'Certification',
@@ -174,12 +162,20 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const { lang: currentLang } = useI18n()
+    
+    // 响应式数据
     const activeCategoryId = ref(null)
-    const services = ref([])
-    const categories = ref([])
-    const categoryTreeData = ref([]) // 保存原始树形数据
+    const categoryTreeData = ref([])
+    const allServices = ref([])
+    const currentServices = ref([])
+    const isLoading = ref(false)
+    const expandedCategories = ref(new Set())
+    
+    // 分页相关
+    const currentPage = ref(1)
+    const pageSize = ref(10) // 每页显示10个服务
 
-    // 在树形数据中查找分类的辅助函数（统一使用数字比较，支持字符串和数字类型的ID）
+    // 在树形数据中查找分类
     const findCategoryInTree = (tree, id) => {
       for (const cat of tree) {
         if (Number(cat.id) === Number(id)) {
@@ -193,217 +189,219 @@ export default {
       return null
     }
 
-    // 顶级分类（用于标签页显示）- 显示所有二级分类（ID=1的子分类），排除ID=1本身
+    // 获取分类及其所有子分类的ID列表
+    const getAllCategoryIds = (category) => {
+      const ids = [category.id]
+      if (category.children && category.children.length > 0) {
+        category.children.forEach(child => {
+          ids.push(child.id)
+          if (child.children && child.children.length > 0) {
+            child.children.forEach(grandChild => {
+              ids.push(grandChild.id)
+            })
+          }
+        })
+      }
+      return ids
+    }
+
+    // 顶级分类（ID=1的子分类）
     const topCategories = computed(() => {
       if (!categoryTreeData.value || categoryTreeData.value.length === 0) {
         return []
       }
-      
-      // 查找ID=1的"认证服务"分类
       const parentCategory = findCategoryInTree(categoryTreeData.value, 1)
       if (parentCategory && parentCategory.children && parentCategory.children.length > 0) {
-        // 返回ID=1的所有子分类（二级分类），按 sortOrder 排序
         return parentCategory.children
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
       }
-      
-      // 如果没有找到ID=1或没有子分类，返回空数组（不显示任何分类）
       return []
     })
 
-    // 标签页显示的分类 - 显示所有后台配置的分类（ID=1的子分类，排除ID=1本身）
-    const tabCategories = computed(() => {
-      // 直接返回topCategories，显示所有后台配置的二级分类
-      return topCategories.value
+    // 当前选中的分类
+    const currentCategory = computed(() => {
+      if (activeCategoryId.value === null) return null
+      return findCategoryInTree(categoryTreeData.value, activeCategoryId.value)
     })
 
-    // 显示的分类（用于内容区域显示）- 显示所有后台配置的分类
-    const displayCategories = computed(() => {
-      console.log('Certification: displayCategories 计算', {
-        activeCategoryId: activeCategoryId.value,
-        topCategoriesCount: topCategories.value.length,
-        categoriesCount: categories.value.length,
-        categoryTreeDataCount: categoryTreeData.value.length
-      })
-      
-      if (activeCategoryId.value === null) {
-        // 显示所有后台配置的二级分类（ID=1的子分类，排除ID=1本身）
-        console.log('Certification: activeCategoryId 为 null，返回 topCategories', topCategories.value.length, '个分类')
-        return topCategories.value
-      }
-      
-      // 显示选中的分类
-      let filtered = categories.value.filter(cat => {
-        const catId = cat.id
-        const activeId = activeCategoryId.value
-        const match = catId == activeId || Number(catId) === Number(activeId) || String(catId) === String(activeId)
-        if (match) {
-          console.log('Certification: 找到匹配的分类', { catId, activeId, category: cat })
-        }
-        return match
-      })
-      
-      console.log('Certification: 在扁平列表中查找，找到', filtered.length, '个分类')
-      
-      // 如果在扁平列表中找不到，在树形结构中查找
-      if (filtered.length === 0 && categoryTreeData.value.length > 0) {
-        console.log('Certification: 在树形结构中查找分类', activeCategoryId.value)
-        const found = findCategoryInTree(categoryTreeData.value, activeCategoryId.value)
-        if (found) {
-          filtered = [found]
-        }
-      }
-      
-      return filtered
+    // 显示的服务列表（分页后）
+    const displayServices = computed(() => {
+      const start = (currentPage.value - 1) * pageSize.value
+      const end = start + pageSize.value
+      return currentServices.value.slice(start, end)
     })
+    
+    // 总页数
+    const totalPages = computed(() => {
+      return Math.ceil(currentServices.value.length / pageSize.value)
+    })
+    
+    // 总服务数
+    const totalServices = computed(() => {
+      return currentServices.value.length
+    })
+    
+    // 处理分页变化
+    const handlePageChange = (page) => {
+      currentPage.value = page
+      // 滚动到顶部
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+    
+    // 处理每页显示数量变化
+    const handleSizeChange = (size) => {
+      pageSize.value = size
+      currentPage.value = 1 // 重置到第一页
+    }
 
-    // 检查一个分类是否是另一个分类的子分类（递归查找）
-    // 如果 childCategoryId 是 parentCategoryId 的子分类（直接或间接），返回 true
-    const isChildCategory = (childCategoryId, parentCategoryId) => {
-      if (!childCategoryId || !parentCategoryId) return false
-      if (Number(childCategoryId) === Number(parentCategoryId)) return true
-      
-      // 首先在扁平列表中查找子分类
-      let childCategory = categories.value.find(cat => Number(cat.id) === Number(childCategoryId))
-      
-      // 如果在扁平列表中找不到，尝试在树形结构中查找
-      if (!childCategory && categoryTreeData.value.length > 0) {
-        childCategory = findCategoryInTree(categoryTreeData.value, childCategoryId)
-      }
-      
-      if (!childCategory) {
-        console.warn(`未找到 categoryId=${childCategoryId} 的分类`)
-        return false
-      }
-      
-      // 递归向上查找父分类链
-      let current = childCategory
-      const visited = new Set() // 防止循环
-      
-      while (current && current.parentId && !visited.has(Number(current.id))) {
-        visited.add(Number(current.id))
-        
-        // 检查直接父分类是否匹配
-        if (Number(current.parentId) === Number(parentCategoryId)) {
-          console.log(`分类 ${childCategoryId} 是分类 ${parentCategoryId} 的子分类（直接）`)
-          return true
+    // 加载分类数据
+    const loadCategories = async () => {
+      try {
+        const res = await getCertificationCategories()
+        if (res.code === 200 && res.data) {
+          categoryTreeData.value = res.data
         }
-        
-        // 查找父分类
-        const parentId = current.parentId
-        current = categories.value.find(cat => Number(cat.id) === Number(parentId))
-        if (!current) {
-          // 如果在扁平列表中找不到，尝试在树形结构中查找
-          current = findCategoryInTree(categoryTreeData.value, parentId)
-          if (!current) {
-            break
+      } catch (error) {
+        console.error('加载分类失败:', error)
+      }
+    }
+
+    // 加载服务数据
+    const loadServices = async (categoryId) => {
+      if (categoryId === null) {
+        // 显示所有服务
+        try {
+          isLoading.value = true
+          const res = await getCertifications()
+          if (res.code === 200 && res.data) {
+            allServices.value = res.data
+            currentServices.value = res.data.filter(s => !s.parentId || s.parentId === 0)
+            // 重置到第一页
+            currentPage.value = 1
           }
+        } catch (error) {
+          console.error('加载服务失败:', error)
+          currentServices.value = []
+        } finally {
+          isLoading.value = false
         }
+        return
+      }
+
+      // 根据分类ID加载服务
+      try {
+        isLoading.value = true
+        const category = findCategoryInTree(categoryTreeData.value, categoryId)
+        if (!category) {
+          currentServices.value = []
+          isLoading.value = false
+          return
+        }
+
+        // 获取该分类及其所有子分类的ID列表
+        const categoryIds = getAllCategoryIds(category)
+        
+        // 调用接口获取所有相关分类的服务
+        const servicePromises = categoryIds.map(catId =>
+          getCertificationsByCategoryId(catId).catch(err => {
+            console.warn(`获取分类 ${catId} 的服务失败:`, err)
+            return { code: 200, data: [] }
+          })
+        )
+        
+        const serviceResults = await Promise.all(servicePromises)
+        
+        // 合并所有服务，去重
+        const allServicesList = []
+        const serviceIdSet = new Set()
+        
+        serviceResults.forEach(result => {
+          if (result.code === 200 && result.data) {
+            result.data.forEach(service => {
+              // 只添加顶级服务（parentId 为 0 或 null），避免重复
+              if ((!service.parentId || service.parentId === 0) && !serviceIdSet.has(service.id)) {
+                serviceIdSet.add(service.id)
+                allServicesList.push(service)
+              }
+            })
+          }
+        })
+        
+        // 按 sortOrder 排序
+        allServicesList.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+        
+        // 直接赋值，触发响应式更新
+        currentServices.value = allServicesList
+        // 重置到第一页
+        currentPage.value = 1
+      } catch (error) {
+        console.error('加载服务失败:', error)
+        currentServices.value = []
+      } finally {
+        isLoading.value = false
+      }
+    }
+
+    // 处理分类切换
+    const handleCategoryChange = async (categoryId) => {
+      const numCategoryId = categoryId ? Number(categoryId) : null
+      
+      if (activeCategoryId.value === numCategoryId) {
+        return
       }
       
-      return false
-    }
-
-    // 获取指定分类下的所有服务（只返回顶级服务）
-    // 包括直接属于该分类的服务，以及属于该分类的子分类的服务
-    const getServicesByCategory = (categoryId) => {
-      console.log('Certification: getServicesByCategory 被调用', {
-        categoryId,
-        categoryIdType: typeof categoryId,
-        totalServices: services.value.length,
-        services: services.value.map(s => ({ id: s.id, nameCn: s.nameCn, categoryId: s.categoryId, categoryIdType: typeof s.categoryId }))
-      })
+      activeCategoryId.value = numCategoryId
       
-      // 当 categoryId 为 null 或 1（认证服务ID）时，返回所有顶级服务（不按分类过滤）
-      if (!categoryId || Number(categoryId) === 1) {
-        console.log('Certification: categoryId 为空或为1（认证服务），返回所有顶级服务')
-        const allTopServices = services.value.filter(s => !s.parentId || s.parentId === 0 || s.parentId === '0' || s.parentId === null)
-        return allTopServices.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+      // 更新 URL 参数
+      const url = new URL(window.location.href)
+      if (numCategoryId) {
+        url.searchParams.set('categoryId', String(numCategoryId))
+      } else {
+        url.searchParams.delete('categoryId')
       }
+      window.history.pushState({}, '', url)
       
-      // 获取所有匹配分类的服务（包括子分类）
-      let result = services.value.filter(s => {
-        const serviceCategoryId = s.categoryId
-        const catId = categoryId
-        
-        if (!serviceCategoryId || !catId) {
-          console.log('Certification: 服务或分类ID为空', { serviceId: s.id, serviceCategoryId, catId })
-          return false
-        }
-        
-        // 直接匹配
-        let matchCategory = false
-        if (Number(serviceCategoryId) === Number(catId)) {
-          matchCategory = true
-          console.log('Certification: 直接匹配成功', { serviceId: s.id, serviceCategoryId, catId })
-        } else if (String(serviceCategoryId) === String(catId)) {
-          matchCategory = true
-          console.log('Certification: 字符串匹配成功', { serviceId: s.id, serviceCategoryId, catId })
-        } else if (serviceCategoryId == catId) {
-          matchCategory = true
-          console.log('Certification: 宽松匹配成功', { serviceId: s.id, serviceCategoryId, catId })
-        }
-        
-        // 如果直接匹配失败，检查是否是子分类
-        if (!matchCategory) {
-          const isChild = isChildCategory(serviceCategoryId, catId)
-          if (isChild) {
-            console.log('Certification: 子分类匹配成功', { serviceId: s.id, serviceCategoryId, catId })
-            matchCategory = true
-          }
-        }
-        
-        return matchCategory
-      })
-      
-      console.log('Certification: 匹配后的服务数量（过滤前）', result.length, result.map(s => ({ id: s.id, nameCn: s.nameCn, categoryId: s.categoryId, parentId: s.parentId })))
-      
-      // 只返回顶级服务（parentId 为 0 或 null）
-      result = result.filter(s => !s.parentId || s.parentId === 0 || s.parentId === '0' || s.parentId === null)
-      
-      console.log('Certification: 最终返回的顶级服务数量', result.length, result.map(s => ({ id: s.id, nameCn: s.nameCn, categoryId: s.categoryId })))
-      
-      // 按排序字段排序
-      return result.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+      // 加载服务
+      await loadServices(numCategoryId)
+      // 重置到第一页
+      currentPage.value = 1
     }
 
-    // 获取指定分类下的所有服务（包括子服务，用于调试）
-    const getAllServicesByCategory = (categoryId) => {
-      return services.value.filter(s => {
-        const serviceCategoryId = s.categoryId
-        const catId = categoryId
-        
-        let matchCategory = false
-        if (serviceCategoryId != null && catId != null) {
-          if (Number(serviceCategoryId) === Number(catId)) {
-            matchCategory = true
-          } else if (String(serviceCategoryId) === String(catId)) {
-            matchCategory = true
-          } else if (serviceCategoryId == catId) {
-            matchCategory = true
-          }
+    // 切换分类展开/折叠
+    const toggleCategory = (categoryId) => {
+      if (expandedCategories.value.has(categoryId)) {
+        expandedCategories.value.delete(categoryId)
+      } else {
+        expandedCategories.value.add(categoryId)
+      }
+      expandedCategories.value = new Set(expandedCategories.value)
+    }
+
+    // 监听路由变化
+    watch(() => route.query.categoryId, (newCategoryId) => {
+      if (newCategoryId) {
+        const numId = Number(newCategoryId)
+        if (activeCategoryId.value !== numId) {
+          activeCategoryId.value = numId
+          loadServices(numId)
         }
-        
-        return matchCategory
-      })
+      } else {
+        if (activeCategoryId.value !== null) {
+          activeCategoryId.value = null
+          loadServices(null)
+        }
+      }
+    }, { immediate: true })
+
+    // 工具函数
+    const isImage = (str) => {
+      if (!str) return false
+      return str.startsWith('http://') || str.startsWith('https://') || str.startsWith('/') || str.includes('.jpg') || str.includes('.png') || str.includes('.gif') || str.includes('.jpeg') || str.includes('.webp')
     }
 
-    // 保留原函数名以兼容旧代码
-    const getTopServicesByCategory = getServicesByCategory
-
-    const getChildServices = (parentId) => {
-      return services.value.filter(s => s.parentId === parentId)
-        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
-    }
-
-    const isImage = (content) => {
-      if (!content) return false
-      return /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(content)
-    }
-
-    const isHtml = (content) => {
-      if (!content) return false
-      return /<[a-z][\s\S]*>/i.test(content)
+    const isHtml = (str) => {
+      if (!str) return false
+      return str.includes('<') && str.includes('>')
     }
 
     const getServiceImage = (service) => {
@@ -416,157 +414,20 @@ export default {
       return ''
     }
 
-    // 处理 URL 参数中的 categoryId
-    const handleUrlParams = () => {
-      const urlParams = new URLSearchParams(window.location.search)
-      const categoryIdParam = urlParams.get('categoryId')
-      console.log('Certification: handleUrlParams - URL参数:', { categoryIdParam, search: window.location.search })
-      if (categoryIdParam) {
-        const categoryId = Number(categoryIdParam)
-        if (!isNaN(categoryId)) {
-          activeCategoryId.value = categoryId
-          console.log('Certification: handleUrlParams - 设置 activeCategoryId:', categoryId)
-        } else {
-          console.warn('Certification: handleUrlParams - categoryId 不是有效数字:', categoryIdParam)
-          // 如果参数无效，设置为 null，显示所有服务
-          activeCategoryId.value = null
-        }
-      } else {
-        console.log('Certification: handleUrlParams - 没有 categoryId 参数，默认显示所有服务')
-        // 确保默认显示所有服务（activeCategoryId 为 null）
-        activeCategoryId.value = null
+    const handleImageError = (event) => {
+      if (event.target && event.target.parentElement) {
+        event.target.parentElement.style.display = 'none'
       }
     }
 
-    onMounted(async () => {
-      try {
-        console.log('Certification: 开始加载数据...')
-        console.log('Certification: 调用接口 - GET /api/certification/list')
-        console.log('Certification: 调用接口 - GET /api/certification-category/tree')
-        
-        const [servicesRes, categoriesRes] = await Promise.all([
-          getCertifications(),
-          getCertificationCategories()
-        ])
-        
-        console.log('Certification: 服务接口返回', {
-          url: '/api/certification/list',
-          code: servicesRes.code,
-          dataLength: servicesRes.data?.length || 0,
-          data: servicesRes.data
-        })
-        
-        if (servicesRes.code === 200) {
-          services.value = servicesRes.data || []
-          console.log('Certification: 服务数据已加载，共', services.value.length, '条')
-        } else {
-          console.error('Certification: 服务数据加载失败:', servicesRes)
-        }
-        
-        console.log('Certification: 分类接口返回', {
-          url: '/api/certification-category/tree',
-          code: categoriesRes.code,
-          dataLength: categoriesRes.data?.length || 0,
-          data: categoriesRes.data
-        })
-        
-        if (categoriesRes.code === 200) {
-          // 保存原始树形数据
-          categoryTreeData.value = categoriesRes.data || []
-          
-          // 将树形结构转换为扁平列表（包括所有层级的分类），用于查找和匹配
-          const flattenCategories = (cats) => {
-            const result = []
-            const flatten = (items) => {
-              items.forEach(cat => {
-                result.push(cat)
-                if (cat.children && cat.children.length > 0) {
-                  flatten(cat.children)
-                }
-              })
-            }
-            flatten(cats)
-            return result
-          }
-          categories.value = flattenCategories(categoriesRes.data || [])
-          console.log('Certification: 分类数据已加载，扁平化后共', categories.value.length, '个分类')
-          
-          // 处理 URL 参数
-          handleUrlParams()
-          console.log('Certification: URL 参数处理完成，当前 activeCategoryId:', activeCategoryId.value)
-          
-          // 如果 activeCategoryId 为 null（默认显示所有服务），确保 URL 中没有 categoryId 参数
-          if (activeCategoryId.value === null) {
-            const url = new URL(window.location.href)
-            if (url.searchParams.has('categoryId')) {
-              url.searchParams.delete('categoryId')
-              window.history.replaceState({}, '', url)
-              console.log('Certification: 清除 URL 中的 categoryId 参数，默认显示所有服务')
-            }
-          }
-        } else {
-          console.error('Certification: 分类数据加载失败:', categoriesRes)
-        }
-      } catch (error) {
-        console.error('Certification: 加载数据失败:', error)
+    const handleImageLoad = (event) => {
+      if (event.target && event.target.parentElement) {
+        event.target.parentElement.style.display = 'block'
       }
-      
-      // 初始化滚动动画
-      await nextTick()
-      setTimeout(() => {
-        initAllScrollAnimations()
-      }, 100)
-    })
+    }
 
-    // 监听路由变化，当 URL 参数变化时更新 activeCategoryId
-    watch(() => route.query.categoryId, (newCategoryId, oldCategoryId) => {
-      console.log('Certification: 路由 query.categoryId 变化', {
-        oldCategoryId,
-        newCategoryId,
-        newCategoryIdType: typeof newCategoryId,
-        fullPath: route.fullPath,
-        path: route.path,
-        query: route.query,
-        currentServicesCount: services.value.length,
-        currentCategoriesCount: categories.value.length,
-        currentActiveCategoryId: activeCategoryId.value,
-        note: '页面已加载，数据已存在，无需重新调用接口，只需更新过滤条件'
-      })
-      
-      if (newCategoryId) {
-        const categoryId = Number(newCategoryId)
-        if (!isNaN(categoryId)) {
-          console.log('Certification: 路由变化，更新 activeCategoryId:', categoryId, '(之前是:', activeCategoryId.value, ')')
-          activeCategoryId.value = categoryId
-          console.log('Certification: activeCategoryId 已更新为:', activeCategoryId.value)
-          
-          // 等待响应式更新后检查
-          setTimeout(() => {
-            const servicesCount = getServicesByCategory(categoryId).length
-            console.log('Certification: 当前显示的服务数量:', servicesCount)
-            console.log('Certification: displayCategories 数量:', displayCategories.value.length)
-          }, 100)
-        } else {
-          console.warn('Certification: 路由 categoryId 不是有效数字:', newCategoryId)
-        }
-      } else {
-        console.log('Certification: 路由变化，清除 activeCategoryId')
-        activeCategoryId.value = null
-        console.log('Certification: 当前显示的服务数量（全部）:', services.value.length)
-      }
-    }, { immediate: true })
-
-    // 处理分类切换
-    const handleCategoryChange = (categoryId) => {
-      activeCategoryId.value = categoryId
-      // 更新 URL 参数
-      const url = new URL(window.location.href)
-      if (categoryId) {
-        url.searchParams.set('categoryId', categoryId)
-      } else {
-        url.searchParams.delete('categoryId')
-      }
-      window.history.pushState({}, '', url)
+    const getChildServices = (parentId) => {
+      return allServices.value.filter(s => s.parentId === parentId)
     }
 
     const goToDetail = (id) => {
@@ -582,41 +443,59 @@ export default {
 
     const formatDescription = (desc) => {
       if (!desc) return ''
-      // 如果是HTML，直接返回
       if (isHtml(desc)) {
         return desc
       }
-      // 如果是图片，返回空
       if (isImage(desc)) {
         return ''
       }
-      // 截断描述，最多显示100个字符
       if (desc.length > 100) {
         return desc.substring(0, 100) + '...'
       }
       return desc
     }
 
+    // 初始化
+    onMounted(async () => {
+      await loadCategories()
+      
+      // 处理 URL 参数
+      const categoryId = route.query.categoryId
+      if (categoryId) {
+        const numId = Number(categoryId)
+        activeCategoryId.value = numId
+        await loadServices(numId)
+      } else {
+        await loadServices(null)
+      }
+    })
+
     return {
       activeCategoryId,
-      services,
-      categories,
       topCategories,
-      tabCategories,
-      displayCategories,
-      getTopServicesByCategory,
-      getServicesByCategory,
-      getAllServicesByCategory,
-      getChildServices,
+      currentCategory,
+      displayServices,
+      isLoading,
+      expandedCategories,
+      currentLang,
+      currentPage,
+      pageSize,
+      totalPages,
+      totalServices,
+      handleCategoryChange,
+      toggleCategory,
+      handlePageChange,
+      handleSizeChange,
       isImage,
       isHtml,
       getServiceImage,
-      handleCategoryChange,
+      handleImageError,
+      handleImageLoad,
+      getChildServices,
       goToDetail,
       getSummary,
       formatDescription,
-      getImageUrl,
-      currentLang
+      getImageUrl
     }
   }
 }
@@ -625,30 +504,195 @@ export default {
 <style scoped>
 .certification {
   min-height: 100vh;
+  background: #f5f5f5;
 }
 
 .page-banner {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  padding: 80px 20px;
+  color: white;
+  padding: 40px 0;
   text-align: center;
 }
 
-.page-banner h1 {
-  font-size: 42px;
+.banner-content h1 {
+  font-size: 48px;
   margin-bottom: 10px;
+  font-weight: 700;
 }
 
-.page-banner p {
+.banner-content p {
   font-size: 20px;
   opacity: 0.9;
 }
 
-.service-card {
-  margin-bottom: 30px;
+.certification-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 10px 20px 40px 20px;
+}
+
+.certification-layout {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+/* 左侧导航 */
+.left-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.left_inside_left {
+  width: 100%;
+}
+
+.left_inside_left strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #667eea;
+}
+
+.category-tree {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.category-item {
+  margin-bottom: 5px;
+}
+
+.category-row {
+  display: flex;
+  align-items: center;
+}
+
+.expand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
   cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
+  user-select: none;
+  font-size: 10px;
+  color: #606266;
+  transition: transform 0.3s;
+  margin-right: 5px;
+}
+
+.expand-icon.expanded {
+  transform: rotate(90deg);
+}
+
+.expand-icon:hover {
+  color: #409eff;
+}
+
+.expand-icon-placeholder {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
+
+.category-tree a {
+  display: block;
+  padding: 10px 15px;
+  color: #333;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.category-tree a:hover {
+  background: #f0f0f0;
+  color: #667eea;
+}
+
+.category-tree a.selected_color {
+  background: #667eea;
+  color: white;
+  font-weight: 500;
+}
+
+.sub-category-list {
+  list-style: none;
+  padding: 0;
+  margin: 5px 0 5px 35px;
+  border-left: 1px solid #e4e7ed;
+}
+
+.sub-category-item {
+  margin-bottom: 0;
+  position: relative;
+}
+
+.sub-category-item::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: #e4e7ed;
+}
+
+.sub-category-item a {
+  padding-left: 20px;
+  font-size: 13px;
+}
+
+/* 右侧内容 */
+.right-content {
+  flex: 1;
+  min-width: 0;
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+.category-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.category-subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-top: 5px;
+}
+
+.service-list-wrapper {
+  width: 100%;
+}
+
+.service-card {
+  cursor: pointer;
+  transition: all 0.3s;
+  border-radius: 8px;
   overflow: hidden;
+  background: white;
+  border: 1px solid #e4e7ed;
+  display: block;
+  visibility: visible;
+  opacity: 1;
 }
 
 .service-card:hover {
@@ -656,11 +700,35 @@ export default {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
+/* 动画类 */
+.scale-in {
+  animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
 .service-image-wrapper {
   width: 100%;
   height: 200px;
   overflow: hidden;
-  margin-bottom: 15px;
   background: #f5f5f5;
   display: flex;
   align-items: center;
@@ -668,85 +736,57 @@ export default {
 }
 
 .service-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s;
-}
-
-.service-card:hover .service-image {
-  transform: scale(1.15);
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .service-content {
-  padding: 0 5px;
+  padding: 20px;
+  background: white;
+  color: #333;
 }
 
 .service-content h3 {
   font-size: 20px;
-  margin-bottom: 8px;
-  color: #2c3e50;
   font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  display: block;
+  visibility: visible;
 }
 
 .service-name-en {
-  color: #909399;
   font-size: 14px;
-  margin-bottom: 12px;
+  color: #666;
+  margin-bottom: 10px;
 }
 
 .service-summary {
-  color: #606266;
   font-size: 14px;
+  color: #555;
   line-height: 1.6;
-  margin: 10px 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.category-title {
-  font-size: 28px;
-  color: #2c3e50;
   margin-bottom: 10px;
-  font-weight: 600;
-}
-
-.category-subtitle {
-  color: #909399;
-  font-size: 16px;
-  margin-bottom: 20px;
 }
 
 .service-desc {
+  font-size: 13px;
   color: #666;
   line-height: 1.6;
-  margin-top: 12px;
-  font-size: 14px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.service-desc :deep(img) {
-  max-width: 100%;
-  height: auto;
+  margin-top: 10px;
 }
 
 .child-services {
   margin-top: 15px;
   padding-top: 15px;
-  border-top: 1px solid #ebeef5;
+  border-top: 1px solid #eee;
 }
 
 .child-service-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: 10px;
 }
 
 .child-tag {
@@ -756,29 +796,25 @@ export default {
 
 .child-tag:hover {
   transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* 移动端适配 */
+/* 响应式设计 */
 @media (max-width: 768px) {
-  .page-banner {
-    padding: 50px 15px;
+  .certification-layout {
+    flex-direction: column;
   }
 
-  .page-banner h1 {
-    font-size: 28px;
+  .left-sidebar {
+    width: 100%;
+    margin-bottom: 20px;
   }
 
-  .page-banner p {
-    font-size: 16px;
+  .service-list {
+    flex-direction: column;
   }
 
   .service-card {
-    padding: 20px 15px;
-  }
-
-  .service-card h3 {
-    font-size: 18px;
+    width: 100% !important;
   }
 }
 </style>
