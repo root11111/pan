@@ -1047,6 +1047,17 @@ export default {
     padding: 140px 15px 60px;
   }
 
+  /* 禁用移动端淡入动画，直接显示 */
+  .banner-text.fade-in {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
+  .banner-actions.fade-in-immediate {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
   .banner-text {
     margin-top: 40px;
   }
@@ -1074,6 +1085,9 @@ export default {
 
   .value-item {
     padding: 20px 12px;
+    /* 禁用移动端滑入动画，直接显示 */
+    opacity: 1 !important;
+    animation: none !important;
   }
 
   .value-item h3 {
@@ -1102,6 +1116,17 @@ export default {
     padding: 120px 15px 50px;
   }
 
+  /* 禁用小屏幕淡入动画，直接显示 */
+  .banner-text.fade-in {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
+  .banner-actions.fade-in-immediate {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
   .banner-text {
     margin-top: 30px;
   }
@@ -1126,6 +1151,9 @@ export default {
 
   .value-item {
     padding: 18px 10px;
+    /* 禁用小屏幕滑入动画，直接显示 */
+    opacity: 1 !important;
+    animation: none !important;
   }
 
   .value-item h3 {

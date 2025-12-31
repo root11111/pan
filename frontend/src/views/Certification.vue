@@ -71,14 +71,13 @@
             </div>
             <template v-else-if="displayServices && displayServices.length > 0">
               <div class="service-list-wrapper" style="margin-top: 20px;">
-                <div class="service-list" style="display: flex; flex-wrap: wrap; gap: 30px; justify-content: flex-start;">
+                <div class="service-list">
                   <el-card 
                     v-for="service in displayServices" 
                     :key="`service-${service.id}`"
                     class="service-card hover-lift" 
                     shadow="hover" 
                     @click="goToDetail(service.id)"
-                    style="width: calc(33.333% - 20px); min-width: 300px; flex: 0 0 auto; margin-bottom: 0; opacity: 1; visibility: visible;"
                   >
                     <div class="service-image-wrapper" v-if="service.image || (service.descriptionCn && isImage(service.descriptionCn))">
                       <img 
@@ -123,13 +122,14 @@
             </div>
             
             <!-- 分页组件 -->
-            <div v-if="!isLoading && totalServices > 0" style="margin-top: 40px; display: flex; justify-content: center;">
+            <div v-if="!isLoading && totalServices > 0" class="pagination-wrapper">
               <el-pagination
                 v-model:current-page="currentPage"
                 v-model:page-size="pageSize"
                 :page-sizes="[10, 20, 30, 40]"
                 :total="totalServices"
-                layout="total, sizes, prev, pager, next, jumper"
+                :pager-count="pagerCount"
+                :layout="paginationLayout"
                 @current-change="handlePageChange"
                 @size-change="handleSizeChange"
               />
@@ -144,7 +144,7 @@
 </template>
 
 <script>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Header from '../components/Header.vue'
 import Footer from '../components/Footer.vue'
@@ -174,6 +174,24 @@ export default {
     // 分页相关
     const currentPage = ref(1)
     const pageSize = ref(10) // 每页显示10个服务
+    
+    // 响应式分页布局
+    const isMobile = ref(false)
+    
+    const checkMobile = () => {
+      if (typeof window !== 'undefined') {
+        isMobile.value = window.innerWidth <= 768
+      }
+    }
+    
+    // 分页器显示的页码数量：移动端4个，桌面端7个（默认）
+    const pagerCount = computed(() => {
+      return isMobile.value ? 4 : 7
+    })
+    
+    const paginationLayout = computed(() => {
+      return isMobile.value ? 'prev, pager, next' : 'total, sizes, prev, pager, next, jumper'
+    })
 
     // 在树形数据中查找分类
     const findCategoryInTree = (tree, id) => {
@@ -466,6 +484,9 @@ export default {
 
     // 初始化
     onMounted(async () => {
+      checkMobile()
+      window.addEventListener('resize', checkMobile)
+      
       await loadCategories()
       
       // 处理 URL 参数
@@ -476,6 +497,12 @@ export default {
         await loadServices(numId)
       } else {
         await loadServices(null)
+      }
+    })
+    
+    onUnmounted(() => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', checkMobile)
       }
     })
 
@@ -491,10 +518,12 @@ export default {
       pageSize,
       totalPages,
       totalServices,
+      pagerCount,
       handleCategoryChange,
       toggleCategory,
       handlePageChange,
       handleSizeChange,
+      paginationLayout,
       isImage,
       isHtml,
       getServiceImage,
@@ -690,9 +719,22 @@ export default {
 
 .service-list-wrapper {
   width: 100%;
+  overflow: hidden;
+}
+
+.service-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: flex-start;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .service-card {
+  width: calc(33.333% - 20px);
+  min-width: 300px;
+  flex: 0 0 auto;
   cursor: pointer;
   transition: all 0.3s;
   border-radius: 8px;
@@ -702,6 +744,7 @@ export default {
   display: block;
   visibility: visible;
   opacity: 1;
+  box-sizing: border-box;
 }
 
 .service-card:hover {
@@ -807,23 +850,200 @@ export default {
   transform: scale(1.05);
 }
 
+/* 分页组件基础样式 */
+.pagination-wrapper {
+  width: 100%;
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.pagination-wrapper :deep(.el-pagination) {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.pagination-wrapper :deep(.el-pagination .el-pagination__total),
+.pagination-wrapper :deep(.el-pagination .el-pagination__sizes),
+.pagination-wrapper :deep(.el-pagination .el-pager),
+.pagination-wrapper :deep(.el-pagination .btn-prev),
+.pagination-wrapper :deep(.el-pagination .btn-next),
+.pagination-wrapper :deep(.el-pagination .el-pagination__jump) {
+  margin: 0 5px;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .certification-container {
+    padding: 10px 15px 40px 15px;
+  }
+
   .certification-layout {
     flex-direction: column;
+    gap: 20px;
   }
 
   .left-sidebar {
     width: 100%;
     margin-bottom: 20px;
+    padding: 15px;
+  }
+
+  .right-content {
+    padding: 20px 15px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .service-list-wrapper {
+    width: 100%;
+    overflow: hidden;
   }
 
   .service-list {
     flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .service-card {
     width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex: 1 1 100% !important;
+    margin-bottom: 0;
+    box-sizing: border-box;
+  }
+
+  .service-content {
+    padding: 15px;
+  }
+
+  .service-content h3 {
+    font-size: 18px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .service-name-en {
+    font-size: 13px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .service-summary,
+  .service-desc {
+    font-size: 13px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .category-title {
+    font-size: 22px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .category-subtitle {
+    font-size: 14px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* 分页组件移动端样式 */
+  .pagination-wrapper {
+    width: 100%;
+    overflow: hidden;
+    padding: 0 10px;
+    box-sizing: border-box;
+  }
+
+  .pagination-wrapper :deep(.el-pagination) {
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .pagination-wrapper :deep(.el-pagination .el-pagination__total),
+  .pagination-wrapper :deep(.el-pagination .el-pagination__sizes),
+  .pagination-wrapper :deep(.el-pagination .el-pager),
+  .pagination-wrapper :deep(.el-pagination .btn-prev),
+  .pagination-wrapper :deep(.el-pagination .btn-next),
+  .pagination-wrapper :deep(.el-pagination .el-pagination__jump) {
+    margin: 5px 2px;
+    flex-shrink: 0;
+  }
+
+  .pagination-wrapper :deep(.el-pagination .el-pager li) {
+    min-width: 32px;
+    height: 32px;
+    line-height: 32px;
+    font-size: 13px;
+  }
+
+  .pagination-wrapper :deep(.el-pagination .btn-prev),
+  .pagination-wrapper :deep(.el-pagination .btn-next) {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .certification-container {
+    padding: 10px 10px 30px 10px;
+  }
+
+  .right-content {
+    padding: 15px 10px;
+  }
+
+  .service-list {
+    gap: 15px;
+  }
+
+  .service-content {
+    padding: 12px;
+  }
+
+  .service-content h3 {
+    font-size: 16px;
+  }
+
+  .banner-content h1 {
+    font-size: 32px;
+  }
+
+  .banner-content p {
+    font-size: 16px;
+  }
+
+  /* 分页组件小屏幕样式 */
+  .pagination-wrapper {
+    padding: 0 5px;
+  }
+
+  .pagination-wrapper :deep(.el-pagination) {
+    font-size: 12px;
+  }
+
+  .pagination-wrapper :deep(.el-pagination .el-pager li) {
+    min-width: 28px;
+    height: 28px;
+    line-height: 28px;
+    font-size: 12px;
+    margin: 0 2px;
+  }
+
+  .pagination-wrapper :deep(.el-pagination .btn-prev),
+  .pagination-wrapper :deep(.el-pagination .btn-next) {
+    min-width: 28px;
+    height: 28px;
+    padding: 0 6px;
+    margin: 0 2px;
   }
 }
 </style>

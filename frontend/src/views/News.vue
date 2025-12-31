@@ -22,7 +22,6 @@
               <p class="news-summary">{{ item.summary }}</p>
               <div class="news-meta">
                 <span>{{ formatDate(item.publishTime) }}</span>
-                <span style="margin-left: 15px;">{{ t('browse') }} {{ item.viewCount || 0 }}</span>
               </div>
             </div>
           </el-card>
@@ -33,9 +32,10 @@
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
         :total="total"
-        layout="prev, pager, next, jumper"
+        :pager-count="pagerCount"
+        :layout="paginationLayout"
         @current-change="handlePageChange"
-        style="margin-top: 40px; justify-content: center;"
+        class="news-pagination"
       />
     </div>
 
@@ -44,7 +44,7 @@
 </template>
 
 <script>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { initAllScrollAnimations } from '../utils/scrollAnimation'
 import Header from '../components/Header.vue'
 import Footer from '../components/Footer.vue'
@@ -64,6 +64,25 @@ export default {
     const currentPage = ref(1)
     const pageSize = ref(9)
     const total = ref(0)
+    
+    // 响应式分页配置
+    const isMobile = ref(false)
+    
+    const checkMobile = () => {
+      if (typeof window !== 'undefined') {
+        isMobile.value = window.innerWidth <= 768
+      }
+    }
+    
+    // 分页器显示的页码数量：移动端4个，桌面端7个（默认）
+    const pagerCount = computed(() => {
+      return isMobile.value ? 4 : 7
+    })
+    
+    // 分页布局：移动端简化，桌面端完整
+    const paginationLayout = computed(() => {
+      return isMobile.value ? 'prev, pager, next' : 'prev, pager, next, jumper'
+    })
 
     const loadNews = async () => {
       try {
@@ -78,12 +97,21 @@ export default {
     }
 
     onMounted(async () => {
+      checkMobile()
+      window.addEventListener('resize', checkMobile)
+      
       await loadNews()
       // 初始化滚动动画
       await nextTick()
       setTimeout(() => {
         initAllScrollAnimations()
       }, 100)
+    })
+    
+    onUnmounted(() => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', checkMobile)
+      }
     })
 
     const handlePageChange = () => {
@@ -102,6 +130,8 @@ export default {
       currentPage,
       pageSize,
       total,
+      pagerCount,
+      paginationLayout,
       handlePageChange,
       formatDate,
       getImageUrl,
@@ -264,6 +294,28 @@ export default {
   border-top: 1px solid var(--border-color);
 }
 
+/* 分页组件基础样式 */
+.news-pagination {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.news-pagination :deep(.el-pagination) {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.news-pagination :deep(.el-pagination .el-pager),
+.news-pagination :deep(.el-pagination .btn-prev),
+.news-pagination :deep(.el-pagination .btn-next),
+.news-pagination :deep(.el-pagination .el-pagination__jump) {
+  margin: 0 5px;
+}
+
 /* 移动端适配 */
 @media (max-width: 768px) {
   .page-banner {
@@ -284,6 +336,43 @@ export default {
 
   .news-content h3 {
     font-size: 18px;
+  }
+
+  /* 分页组件移动端样式 */
+  .news-pagination {
+    margin-top: 40px;
+    width: 100%;
+    overflow: hidden;
+    padding: 0 10px;
+    box-sizing: border-box;
+  }
+
+  .news-pagination :deep(.el-pagination) {
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .news-pagination :deep(.el-pagination .el-pager),
+  .news-pagination :deep(.el-pagination .btn-prev),
+  .news-pagination :deep(.el-pagination .btn-next),
+  .news-pagination :deep(.el-pagination .el-pagination__jump) {
+    margin: 5px 2px;
+    flex-shrink: 0;
+  }
+
+  .news-pagination :deep(.el-pagination .el-pager li) {
+    min-width: 32px;
+    height: 32px;
+    line-height: 32px;
+    font-size: 13px;
+  }
+
+  .news-pagination :deep(.el-pagination .btn-prev),
+  .news-pagination :deep(.el-pagination .btn-next) {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
   }
 }
 </style>
