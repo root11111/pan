@@ -146,22 +146,20 @@
       >
         <div v-if="certificateDetail" class="certificate-detail">
           <div class="detail-header">
-            <div class="detail-badge">
-              <el-icon :size="40"><Trophy /></el-icon>
+            <div class="detail-badge-wrapper">
+              <div class="detail-badge">
+                <el-icon :size="40"><Trophy /></el-icon>
+              </div>
+              <el-tag 
+                :type="certificateDetail.status === '有效' ? 'success' : certificateDetail.status === '已过期' ? 'danger' : 'warning'"
+                size="large"
+                class="detail-status"
+              >
+                {{ certificateDetail.status }}
+              </el-tag>
             </div>
-            <div class="detail-title">
-              <h3>{{ certificateDetail.productName }}</h3>
-              <p>{{ certificateDetail.certificateNo }}</p>
-            </div>
-            <el-tag 
-              :type="certificateDetail.status === '有效' ? 'success' : certificateDetail.status === '已过期' ? 'danger' : 'warning'"
-              size="large"
-              class="detail-status"
-            >
-              {{ certificateDetail.status }}
-            </el-tag>
           </div>
-          <el-descriptions :column="2" border class="detail-descriptions">
+          <el-descriptions :column="isMobile ? 1 : 2" border class="detail-descriptions">
             <el-descriptions-item :label="t('certificateNo')">{{ certificateDetail.certificateNo }}</el-descriptions-item>
             <el-descriptions-item :label="t('productName')">{{ certificateDetail.productName }}</el-descriptions-item>
             <el-descriptions-item :label="t('certificateType')">{{ certificateDetail.certificateType || '-' }}</el-descriptions-item>
@@ -217,7 +215,7 @@
 </template>
 
 <script>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 import Header from '../components/Header.vue'
 import Footer from '../components/Footer.vue'
 import { ElMessage, ElDialog } from 'element-plus'
@@ -265,6 +263,21 @@ export default {
     const loading = ref(false)
     const detailVisible = ref(false)
     const certificateDetail = ref(null)
+    const isMobile = ref(false)
+
+    // 检测是否为手机端
+    const checkMobile = () => {
+      isMobile.value = window.innerWidth <= 768
+    }
+
+    onMounted(() => {
+      checkMobile()
+      window.addEventListener('resize', checkMobile)
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('resize', checkMobile)
+    })
 
     const handleQuery = async () => {
       if (!queryForm.value.certificateNo && !queryForm.value.productName) {
@@ -394,7 +407,8 @@ export default {
       isPdfFile,
       getFileName,
       handleImageError,
-      downloadCertificateFile
+      downloadCertificateFile,
+      isMobile
     }
   }
 }
@@ -657,6 +671,8 @@ export default {
 
 .certificate-info {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .certificate-info h4 {
@@ -665,6 +681,9 @@ export default {
   color: var(--text-primary);
   margin: 0 0 8px 0;
   line-height: 1.4;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 .certificate-no {
@@ -672,6 +691,9 @@ export default {
   font-size: 14px;
   margin: 0;
   font-family: 'Courier New', monospace;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 .status-tag {
@@ -810,8 +832,61 @@ export default {
     padding: 20px;
   }
 
+  .certificate-header {
+    flex-wrap: wrap;
+  }
+
+  .certificate-info {
+    min-width: 0;
+    flex: 1 1 100%;
+    margin-bottom: 12px;
+  }
+
+  .status-tag {
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
   .certificate-details {
     grid-template-columns: 1fr;
+  }
+
+  .detail-header {
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+  }
+
+  .detail-badge-wrapper {
+    width: auto;
+    margin-bottom: 0;
+  }
+
+  .detail-descriptions {
+    width: 100%;
+  }
+
+  .detail-descriptions :deep(.el-descriptions__table) {
+    width: 100% !important;
+  }
+
+  .detail-descriptions :deep(.el-descriptions__body .el-descriptions__table .el-descriptions__cell) {
+    display: block;
+    width: 100% !important;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+  }
+
+  .detail-descriptions :deep(.el-descriptions__body .el-descriptions__table .el-descriptions__label) {
+    width: 100% !important;
+    display: block;
+    padding-bottom: 4px;
+    font-weight: 600;
+  }
+
+  .detail-descriptions :deep(.el-descriptions__body .el-descriptions__table .el-descriptions__content) {
+    width: 100% !important;
+    display: block;
   }
 }
 
@@ -847,11 +922,20 @@ export default {
 .detail-header {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 20px;
   padding: 24px;
   background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
   border-radius: 16px;
   margin-bottom: 24px;
+}
+
+.detail-badge-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .detail-badge {
@@ -869,6 +953,8 @@ export default {
 
 .detail-title {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .detail-title h3 {
@@ -876,6 +962,9 @@ export default {
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 8px 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 .detail-title p {
@@ -883,6 +972,9 @@ export default {
   font-size: 14px;
   margin: 0;
   font-family: 'Courier New', monospace;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 .detail-status {
@@ -890,15 +982,28 @@ export default {
   padding: 10px 20px;
   border-radius: 20px;
   font-size: 16px;
+  margin: 0;
 }
 
 .detail-descriptions {
   margin-bottom: 24px;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .detail-descriptions :deep(.el-descriptions__label) {
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.detail-descriptions :deep(.el-descriptions__table) {
+  width: 100%;
+  table-layout: auto;
+}
+
+.detail-descriptions :deep(.el-descriptions__cell) {
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .certificate-image-wrapper {

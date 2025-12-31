@@ -284,7 +284,7 @@
         <h2 class="section-title">{{ currentLang === 'en' ? 'Enterprise Advantages' : '企业优势' }}</h2>
         <p class="section-subtitle">{{ currentLang === 'en' ? '企业优势' : 'Enterprise advantages' }}</p>
         <div class="advantage-intro" v-if="companyInfo">
-          <p>{{ homeConfig.advantage_intro || '广东中翰检测技术有限公司拥有独立的测试场地，先进的实验设备，专业的服务团队，对各种产品有着丰富的全球认证经验。能够帮助客户顺利获得通行各个国家和地区的安全认证。通过中翰的全球认证服务，厂商不仅可以避免送样到国外测试的困扰，还可以缩短认证周期，有效降低成本，从而保证产品顺利通过全球认证的审核。' }}</p>
+          <p>{{ homeConfig.advantage_intro || '深圳蓝泰检测技术有限公司拥有独立的测试场地，先进的实验设备，专业的服务团队，对各种产品有着丰富的全球认证经验。能够帮助客户顺利获得通行各个国家和地区的安全认证。通过蓝泰的全球认证服务，厂商不仅可以避免送样到国外测试的困扰，还可以缩短认证周期，有效降低成本，从而保证产品顺利通过全球认证的审核。' }}</p>
         </div>
         <el-row :gutter="20" class="advantage-list" style="margin-top: 40px;">
           <el-col 
@@ -529,8 +529,23 @@ export default {
       { id: 10, name: currentLang.value === 'en' ? 'Other' : '其他', icon: '/testing/other.png', iconLoaded: false }
     ])
     
-    // 监听语言变化，更新认证分类名称和检测项目名称
+    // 加载首页配置
+    const loadHomeConfig = async (lang) => {
+      try {
+        const configRes = await getHomeConfigMap(lang || currentLang.value)
+        if (configRes.code === 200) {
+          homeConfig.value = configRes.data || {}
+        }
+      } catch (error) {
+        console.error('加载首页配置失败:', error)
+      }
+    }
+
+    // 监听语言变化，更新认证分类名称和检测项目名称，以及首页配置
     watch(currentLang, (newLang) => {
+      // 重新加载首页配置（根据新语言）
+      loadHomeConfig(newLang)
+      
       // 更新全球认证分类名称
       certifications.value = certifications.value.map(item => ({
         ...item,
@@ -560,15 +575,14 @@ export default {
         
         // 1. 加载 Banner 相关数据（最顶部）
         try {
-          const [configRes, valuesRes, companyRes] = await Promise.all([
-            getHomeConfigMap('cn'),
+          const [valuesRes, companyRes] = await Promise.all([
             getBannerValues(),
             getCompanyInfo()
           ])
           
-          if (configRes.code === 200) {
-            homeConfig.value = configRes.data || {}
-          }
+          // 根据当前语言加载配置
+          await loadHomeConfig(currentLang.value)
+          
           if (valuesRes.code === 200) {
             bannerValues.value = valuesRes.data || []
           }
@@ -1589,12 +1603,13 @@ export default {
   }
 
   .ipro-list ul {
-    gap: 16px;
+    gap: 12px;
   }
 
   .ipro-list li {
-    flex: 0 0 calc(33.333% - 16px);
-    min-width: 100px;
+    flex: 0 0 calc(33.333% - 8px) !important;
+    min-width: 0 !important;
+    max-width: calc(33.333% - 8px) !important;
   }
 
   .icon-pro {
